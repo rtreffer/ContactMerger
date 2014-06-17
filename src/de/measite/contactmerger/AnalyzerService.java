@@ -186,7 +186,7 @@ public class AnalyzerService extends Service {
 
         final Notification.Builder builder = 
             new Notification.Builder(getApplicationContext())
-                .setSmallIcon(R.drawable.icon)
+                .setSmallIcon(R.drawable.notification_icon)
                 .setContentIntent(startPending)
                 .setProgress(1000, 0, false)
                 .setContentTitle("Analyzing your contacts")
@@ -233,7 +233,7 @@ public class AnalyzerService extends Service {
                     if (count > 0) {
                         Builder ibuilder =
                             new Notification.Builder(getApplicationContext())
-                                .setSmallIcon(R.drawable.icon)
+                                .setSmallIcon(R.drawable.notification_icon)
                                 .setContentIntent(startPending)
                                 .setContentTitle("Merge " + count + " contacts")
                                 .setWhen(System.currentTimeMillis())
