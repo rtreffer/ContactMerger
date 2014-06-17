@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:paddingLeft="1dip"
+    android:paddingRight="1dip" >
+
+    <TextView
+        android:id="@+id/contact_tree_spacer"
+        android:layout_width="15dip"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/contact_picture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/screen_background_dark"
+        android:visibility="gone"
+        tools:ignore="ContentDescription" />
+
+    <LinearLayout
+        android:layout_width="0dip"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/contactname"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="" />
+
+        <TextView
+            android:id="@+id/contactdetails"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="8sp"
+            android:visibility="gone"
+            tools:ignore="SmallSp" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/accept"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/fa_check"
+        android:visibility="visible"
+        android:textSize="36sp"
+        android:tag="accept"
+        android:textColor="#5E9B00"
+        android:padding="2sp"
+    />
+
+    <TextView
+        android:id="@+id/remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/fa_times"
+        android:visibility="visible"
+        android:textSize="24sp"
+        android:tag="remove"
+        android:textColor="#730D00"
+        android:padding="4sp"
+    />
+
+</LinearLayout>
