@@ -7,20 +7,29 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.ContentProviderClient;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import de.measite.contactmerger.R;
 import de.measite.contactmerger.contacts.Contact;
 import de.measite.contactmerger.contacts.ContactDataMapper;
+import de.measite.contactmerger.contacts.Metadata;
+import de.measite.contactmerger.contacts.PhotoMetadata;
+import de.measite.contactmerger.contacts.RawContact;
 import de.measite.contactmerger.graph.UndirectedGraph;
 import de.measite.contactmerger.ui.model.MergeContact;
 import de.measite.contactmerger.ui.model.ModelIO;
@@ -28,6 +37,7 @@ import de.measite.contactmerger.ui.model.RootContact;
 
 public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
+    protected static final String TAG = "ContactMerger/MergeListAdapter";
     protected UndirectedGraph<Long, Double> graph;
     protected Thread transform;
     protected ArrayList<MergeContact> model;
@@ -173,6 +183,52 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         remove.setVisibility(isRoot ? View.GONE : View.VISIBLE);
 
         name.setText(contact.getDisplayName());
+
+        boolean found = false;
+        if (contact.getPhotoThumbnailUri() != null &&
+            contact.getPhotoThumbnailUri().length() > 0) {
+            picture.setImageURI(Uri.parse(contact.getPhotoThumbnailUri()));
+            found = true;
+        } else {
+            for (RawContact raw : contact.getRawContacts()) {
+                if (found) break;
+                for (Metadata m : raw.getMetadata().values()) {
+                    if (!(m instanceof PhotoMetadata)) continue;
+                    PhotoMetadata p = (PhotoMetadata) m;
+                    byte data[] = p.getBlob();
+                    if (data == null || data.length == 0) continue;
+                    try {
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                        picture.setImageBitmap(bitmap);
+                        Log.e(TAG, "Display user picture for " + contact.getDisplayName());
+                        found = true;
+                        break;
+                    } catch (Exception e) {
+                        Log.e(TAG, "Can't decode image", e);
+                    }
+                }
+            }
+        }
+        if (!found) {
+            picture.setImageResource(R.drawable.aosp_ic_contacts_holo_dark);
+        }
+
+        int px = (int)
+                TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    isRoot ? 56 : 40,
+                    activity.getResources().getDisplayMetrics());
+        MarginLayoutParams params = (MarginLayoutParams) picture.getLayoutParams();
+        params.width = px;
+        params.height = px;
+        px = (int)
+            TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                4,
+                activity.getResources().getDisplayMetrics());
+        params.bottomMargin = isRoot ? px : 0;
+        params.topMargin = isRoot ? px : 0;
+        picture.setLayoutParams(params);
 
         return view;
     }
