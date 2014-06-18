@@ -245,7 +245,7 @@ public class AnalyzerThread extends Thread {
                     new Term("id", bytes)),
                     Occur.MUST_NOT));
 
-            TopDocs docs = search.search(root, 10);
+            TopDocs docs = search.search(root, 20);
             if (docs.scoreDocs.length > 0) {
                 Log.d(LOGTAG, "Reference " + Arrays.toString(doc.getValues("display_name")));
             }

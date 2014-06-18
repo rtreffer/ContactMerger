@@ -4,22 +4,28 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.TreeSet;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentProviderClient;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.CommonDataKinds.Email;
+import android.provider.ContactsContract.CommonDataKinds.Phone;
+import android.provider.ContactsContract.CommonDataKinds.Website;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
@@ -27,7 +33,9 @@ import android.widget.TextView;
 import de.measite.contactmerger.R;
 import de.measite.contactmerger.contacts.Contact;
 import de.measite.contactmerger.contacts.ContactDataMapper;
+import de.measite.contactmerger.contacts.ImMetadata;
 import de.measite.contactmerger.contacts.Metadata;
+import de.measite.contactmerger.contacts.NicknameMetadata;
 import de.measite.contactmerger.contacts.PhotoMetadata;
 import de.measite.contactmerger.contacts.RawContact;
 import de.measite.contactmerger.graph.UndirectedGraph;
@@ -130,6 +138,46 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         return (model == null) ? 0l : model.get(position).id;
     }
 
+    private static class DisplayMeta implements Comparable<DisplayMeta> {
+        public int type = 0;
+        public String value;
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + type;
+            result = prime * result + ((value == null) ? 0 : value.hashCode());
+            return result;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            DisplayMeta other = (DisplayMeta) obj;
+            if (type != other.type)
+                return false;
+            if (value == null) {
+                if (other.value != null)
+                    return false;
+            } else if (!value.equals(other.value))
+                return false;
+            return true;
+        }
+        @Override
+        public int compareTo(DisplayMeta another) {
+            if (another.type > type) return -1;
+            if (another.type < type) return  1;
+            if (another.value.length() < value.length()) return -1;
+            if (another.value.length() > value.length()) return  1;
+            return value.compareTo(another.value);
+        }
+    }
+
+    @SuppressLint("DefaultLocale")
     @Override
     public View getView(int position, View view, ViewGroup parent) {
         if (view == null) {
@@ -183,6 +231,10 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         remove.setVisibility(isRoot ? View.GONE : View.VISIBLE);
 
         name.setText(contact.getDisplayName());
+        name.setTextSize(isRoot ? 20 : 14);
+        view.setBackgroundColor(isRoot ? Color.rgb(255, 255, 255) : Color.rgb(250, 250, 250));
+
+        // update picture
 
         boolean found = false;
         if (contact.getPhotoThumbnailUri() != null &&
@@ -229,6 +281,60 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         params.bottomMargin = isRoot ? px : 0;
         params.topMargin = isRoot ? px : 0;
         picture.setLayoutParams(params);
+
+        TreeSet<DisplayMeta> data = new TreeSet<DisplayMeta>(); 
+        for (RawContact raw : contact.getRawContacts()) {
+            for (Metadata m : raw.getMetadata().values()) {
+                if (m instanceof NicknameMetadata) {
+                    DisplayMeta d = new DisplayMeta();
+                    d.type = 1;
+                    d.value = ((NicknameMetadata)m).getNickname();
+                    data.add(d);
+                }
+                if (m.getMimetype().equals(Email.CONTENT_ITEM_TYPE)) {
+                    DisplayMeta d = new DisplayMeta();
+                    d.type = 2;
+                    d.value = m.getData(0);
+                    data.add(d);
+                }
+                if (m instanceof ImMetadata) {
+                    DisplayMeta d = new DisplayMeta();
+                    d.type = 3;
+                    StringBuilder sb = new StringBuilder();
+                    ImMetadata im = (ImMetadata)m;
+                    if (im.getProtocol() == ImMetadata.Protocol.CUSTOM) {
+                        sb.append(im.getCustomProtocolLabel());
+                    } else {
+                        sb.append(im.getProtocol().name().toLowerCase());
+                    }
+                    sb.append(im.getData(0));
+                    d.value = sb.toString();
+                    data.add(d);
+                }
+                if (m.getMimetype().equals(Phone.CONTENT_ITEM_TYPE)) {
+                    DisplayMeta d = new DisplayMeta();
+                    d.type = 4;
+                    d.value = m.getData(0);
+                    data.add(d);
+                }
+                if (m.getMimetype().equals(Website.CONTENT_ITEM_TYPE)) {
+                    DisplayMeta d = new DisplayMeta();
+                    d.type = 5;
+                    d.value = m.getData(0);
+                    data.add(d);
+                }
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+        Iterator<DisplayMeta> iter = data.iterator();
+        while (sb.length() < 120 && iter.hasNext()) {
+            DisplayMeta d = iter.next();
+            if (sb.length() + d.value.length() > 120) continue;
+            if (sb.length() > 0) sb.append(" ");
+            sb.append(d.value);
+        }
+        details.setText(sb.toString());
 
         return view;
     }

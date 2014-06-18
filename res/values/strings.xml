@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Contact Merger</string>
-    <string name="title_activity_merge">MergeActivity</string>
+    <string name="title_activity_merge">Contact Merger</string>
 
     <string name="fa_check">&#xf00c;</string>
     <string name="fa_times">&#xf00d;</string>

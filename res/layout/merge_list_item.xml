@@ -25,6 +25,7 @@
         android:layout_width="0dip"
         android:layout_height="wrap_content"
         android:layout_weight="1"
+        android:paddingLeft="3dip"
         android:orientation="vertical" >
 
         <TextView
@@ -38,12 +39,24 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:text=""
-            android:textSize="8sp"
-            android:visibility="gone"
+            android:textSize="10sp"
+            android:lines="1"
+            android:ellipsize="end"
             tools:ignore="SmallSp" />
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/button_seperator"
+        android:layout_width="1dp"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginRight="6dip"
+        android:text=""
+        android:background="#f0f0f0"
+    />
+    
     <TextView
         android:id="@+id/accept"
         android:layout_width="wrap_content"
@@ -54,6 +67,7 @@
         android:tag="accept"
         android:textColor="#5E9B00"
         android:padding="2sp"
+        android:layout_gravity="center_vertical"
     />
 
     <TextView
@@ -66,6 +80,7 @@
         android:tag="remove"
         android:textColor="#730D00"
         android:padding="2sp"
+        android:layout_gravity="center_vertical"
     />
 
 </LinearLayout>

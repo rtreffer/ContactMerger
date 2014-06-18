@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.TreeSet;
 
 import android.content.ContentProviderClient;
-import android.util.Log;
 import android.util.SparseArray;
 import de.measite.contactmerger.contacts.Contact;
 import de.measite.contactmerger.contacts.ContactDataMapper;
@@ -64,6 +63,14 @@ public class GraphConverter {
                 }
                 root1.contacts.addAll(root2.contacts);
                 roots.put((int)root2.id, root);
+                ArrayList<MergeContact> contacts =
+                        new ArrayList<MergeContact>(root1.contacts.size());
+                for (MergeContact m : root1.contacts) {
+                    if (m.id != c1 && m.id != c2) {
+                        contacts.add(m);
+                    }
+                }
+                root1.contacts = contacts;
             }
             if (root == null) {
                 Contact ref = null;
@@ -79,8 +86,8 @@ public class GraphConverter {
                 roots.put((int)right.getId(), root);
             }
 
-            boolean addc1 = true;
-            boolean addc2 = true;
+            boolean addc1 = c1 != root.id;
+            boolean addc2 = c2 != root.id;
             for (MergeContact c: root.contacts) {
                 addc1 &= (c.id != c1);
                 addc2 &= (c.id != c2);
@@ -111,12 +118,6 @@ public class GraphConverter {
         for (RootContact c : contactRoots) {
             result.add(c);
             result.addAll(c.contacts);
-        }
-
-        for (MergeContact c : result) {
-            String prefix = (c instanceof RootContact) ? ":: " : "   :: ";
-            Contact con = mapper.getContactById((int)c.id, false, false);
-            Log.d("GRAPH_CONV", prefix + con.getDisplayName());
         }
 
         return result;
