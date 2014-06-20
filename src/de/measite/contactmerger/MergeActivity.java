@@ -1,6 +1,11 @@
 package de.measite.contactmerger;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+
+import com.tundem.aboutlibraries.Libs;
+import com.tundem.aboutlibraries.ui.LibsActivity;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
@@ -106,6 +111,18 @@ public class MergeActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.about) {
+            Intent intent = new Intent(getApplicationContext(), LibsActivity.class);
+            Field myFields[] = R.string.class.getFields();
+            Field baseFields[] = com.tundem.aboutlibraries.R.string.class.getFields();
+            ArrayList<String> fields = new ArrayList<String>(myFields.length + baseFields.length + 1);
+            for(Field f : myFields) {
+                fields.add(f.getName());
+            }
+            intent.putExtra(Libs.BUNDLE_TITLE, "About ContactMerger/Libraries");
+            intent.putExtra(Libs.BUNDLE_FIELDS, fields.toArray(new String[fields.size()]));
+            intent.putExtra(Libs.BUNDLE_LICENSE, true);
+            intent.putExtra(Libs.BUNDLE_VERSION, true);
+            startActivity(intent);
             return true;
         }
         if (id == R.id.analyze_now) {

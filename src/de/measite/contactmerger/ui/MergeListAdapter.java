@@ -171,6 +171,9 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         public int compareTo(DisplayMeta another) {
             if (another.type > type) return -1;
             if (another.type < type) return  1;
+            if (another.value == null && value == null) return 0;
+            if (another.value == null) return -1;
+            if (value == null) return 1;
             if (another.value.length() < value.length()) return -1;
             if (another.value.length() > value.length()) return  1;
             return value.compareTo(another.value);
@@ -330,6 +333,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         Iterator<DisplayMeta> iter = data.iterator();
         while (sb.length() < 120 && iter.hasNext()) {
             DisplayMeta d = iter.next();
+            if (d.value == null) continue;
             if (sb.length() + d.value.length() > 120) continue;
             if (sb.length() > 0) sb.append(" ");
             sb.append(d.value);

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="lucene-core-nospiclassiterator-4.7.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/lucene-core-nospiclassiterator-4.7.1.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

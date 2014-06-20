@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="aboutLibraries_description_showIcon">true</string>
+    <string name="aboutLibraries_description_showVersion">true</string>
+    <string name="aboutLibraries_description_text">ContactMerger is developed by\nRené Treffer\nFranziska-Bilek-Weg 7\nD-80339 München\nGermany\n\nBut it would not have been possible without these great libraries.</string>
+
+    <!-- lucene licence -->
+    <string name="define_Lucene"></string>
+    <string name="library_Lucene_author">Apache Lucene</string>
+    <string name="library_Lucene_authorWebsite">https://lucene.apache.org/</string>
+    <string name="library_Lucene_libraryName">Apache Lucene</string>
+    <string name="library_Lucene_libraryDescription">Java-based indexing and search technology, as well as spellchecking, hit highlighting and advanced analysis/tokenization capabilities.</string>
+    <string name="library_Lucene_libraryVersion">4.7.1</string>
+    <string name="library_Lucene_libraryWebsite">https://lucene.apache.org/</string>
+    <!-- Possible values right now: apache_2_0, mit, bsd_2, bsd_3 -->
+    <string name="library_Lucene_licenseId">apache_2_0</string>
+    <!-- you still can define the license within your library definition, but it is recommend to use the id -->
+    <!-- possible fields for a custom license: *_licenseVersion, *_licenseLink, *_licenseContent -->
+    <string name="library_Lucene_isOpenSource">true</string>
+    <string name="library_Lucene_repositoryLink">https://svn.apache.org/repos/asf/lucene/dev/</string>
+
+    <!-- kryo licence -->
+    <string name="define_Kryo"></string>
+    <string name="library_Kryo_author">EsothericSoftware</string>
+    <string name="library_Kryo_authorWebsite">https://github.com/EsotericSoftware</string>
+    <string name="library_Kryo_libraryName">Kryo</string>
+    <string name="library_Kryo_libraryDescription">Kryo is a fast and efficient object graph serialization framework for Java. The goals of the project are speed, efficiency, and an easy to use API. The project is useful any time objects need to be persisted, whether to a file, database, or over the network.</string>
+    <string name="library_Kryo_libraryVersion">2.23.0</string>
+    <string name="library_Kryo_libraryWebsite">https://github.com/EsotericSoftware/kryo</string>
+    <!-- Possible values right now: apache_2_0, mit, bsd_2, bsd_3 -->
+    <string name="library_Kryo_licenseId">bsd_3</string>
+    <!-- you still can define the license within your library definition, but it is recommend to use the id -->
+    <!-- possible fields for a custom license: *_licenseVersion, *_licenseLink, *_licenseContent -->
+    <string name="library_Kryo_isOpenSource">true</string>
+    <string name="library_Kryo_repositoryLink">https://github.com/EsotericSoftware/kryo</string>
+
+    <!-- asm licence -->
+    <string name="define_asm"></string>
+    <string name="library_asm_author">ObjectWeb</string>
+    <string name="library_asm_authorWebsite">https://ow2.org/</string>
+    <string name="library_asm_libraryName">ObjectWeb ASM</string>
+    <string name="library_asm_libraryDescription"> ASM is an all purpose Java bytecode manipulation and analysis framework. It can be used to modify existing classes or dynamically generate classes, directly in binary form. Provided common transformations and analysis algorithms allow to easily assemble custom complex transformations and code analysis tools.\n\nASM offer similar functionality as other bytecode frameworks, but it is focused on simplicity of use and performance. Because it was designed and implemented to be as small and as fast as possible, it makes it very attractive for using in dynamic systems.</string>
+    <string name="library_asm_libraryVersion">4.0</string>
+    <string name="library_asm_libraryWebsite">http://asm.ow2.org/</string>
+    <!-- Possible values right now: apache_2_0, mit, bsd_2, bsd_3 -->
+    <string name="library_asm_licenseId">bsd_3</string>
+    <!-- you still can define the license within your library definition, but it is recommend to use the id -->
+    <!-- possible fields for a custom license: *_licenseVersion, *_licenseLink, *_licenseContent -->
+    <string name="library_asm_isOpenSource">true</string>
+    <string name="library_asm_repositoryLink">http://websvn.ow2.org/listing.php?repname=asm&amp;</string>
+
+    <!-- objenesis licence -->
+    <string name="define_objenesis"></string>
+    <string name="library_objenesis_author">Objenesis</string>
+    <string name="library_objenesis_authorWebsite">http://objenesis.org</string>
+    <string name="library_objenesis_libraryName">Objenesis</string>
+    <string name="library_objenesis_libraryDescription">Objenesis is a small Java library that serves one purpose: To instantiate a new object of a particular class.</string>
+    <string name="library_objenesis_libraryVersion">2.1</string>
+    <string name="library_objenesis_libraryWebsite">http://objenesis.org</string>
+    <!-- Possible values right now: apache_2_0, mit, bsd_2, bsd_3 -->
+    <string name="library_objenesis_licenseId">apache_2_0</string>
+    <!-- you still can define the license within your library definition, but it is recommend to use the id -->
+    <!-- possible fields for a custom license: *_licenseVersion, *_licenseLink, *_licenseContent -->
+    <string name="library_objenesis_isOpenSource">true</string>
+    <string name="library_objenesis_repositoryLink">https://github.com/easymock/objenesis</string>
+
+    <!-- aosp licence -->
+    <string name="define_aosp"></string>
+    <string name="library_aosp_author">Android Open Source Project</string>
+    <string name="library_aosp_authorWebsite">https://ow2.org/</string>
+    <string name="library_aosp_libraryName">Android Open Source Project</string>
+    <string name="library_aosp_libraryDescription">Welcome to the Android Open Source Project!\n\nAndroid is an open-source software stack for a wide range of mobile devices and a corresponding open-source project led by Google. Here you can find the information and source code you need to learn more about the Android platform. From there you can create custom variants of the Android software stack, port devices and accessories to the Android platform, and ensure your devices are compatible with the Android compatibility definition.</string>
+    <string name="library_aosp_libraryVersion">4.4</string>
+    <string name="library_aosp_libraryWebsite">https://source.android.com/</string>
+    <!-- Possible values right now: apache_2_0, mit, bsd_2, bsd_3 -->
+    <string name="library_aosp_licenseId">apache_2_0</string>
+    <!-- you still can define the license within your library definition, but it is recommend to use the id -->
+    <!-- possible fields for a custom license: *_licenseVersion, *_licenseLink, *_licenseContent -->
+    <string name="library_aosp_isOpenSource">true</string>
+    <string name="library_aosp_repositoryLink">https://android.googlesource.com</string>
+
+</resources>

@@ -10,7 +10,7 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="16" />
+        android:targetSdkVersion="19" />
 
     <application
         android:allowBackup="false"
@@ -19,6 +19,7 @@
         android:theme="@android:style/Theme.Holo.Light"
         android:largeHeap="true"
     >
+        <activity android:name="com.tundem.aboutlibraries.ui.LibsActivity" />
         <activity
             android:name="de.measite.contactmerger.MergeActivity"
             android:label="@string/title_activity_merge" >
