@@ -7,9 +7,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e79dee0a-511f-4d56-9977-89e73d8f32ad" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/ContactMerger/ContactMerger-ContactMerger.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/AndroidManifest.xml" afterPath="$PROJECT_DIR$/AndroidManifest.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/de/measite/contactmerger/MergeActivity.java" afterPath="$PROJECT_DIR$/src/de/measite/contactmerger/MergeActivity.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/de/measite/contactmerger/ui/MergeListAdapter.java" afterPath="$PROJECT_DIR$/src/de/measite/contactmerger/ui/MergeListAdapter.java" />
     </list>
     <ignored path="ContactMerger.iws" />
@@ -33,15 +30,12 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="MergeActivity.java" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/de/measite/contactmerger/MergeActivity.java">
+      <file leaf-file-name="MergeListAdapter.java" pinned="false" current="true" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/de/measite/contactmerger/ui/MergeListAdapter.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.5818815" vertical-offset="1466" max-vertical-offset="2895">
-              <caret line="123" column="47" selection-start-line="123" selection-start-column="47" selection-end-line="123" selection-end-column="47" />
-              <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#4025#4033#0" expanded="true" />
-              </folding>
+            <state vertical-scroll-proportion="0.058500916" vertical-offset="493" max-vertical-offset="5520">
+              <caret line="76" column="9" selection-start-line="76" selection-start-column="9" selection-end-line="76" selection-end-column="9" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -1080,6 +1074,7 @@
         <option value="$PROJECT_DIR$/build.gradle" />
         <option value="$PROJECT_DIR$/AndroidManifest.xml" />
         <option value="$PROJECT_DIR$/src/de/measite/contactmerger/MergeActivity.java" />
+        <option value="$PROJECT_DIR$/src/de/measite/contactmerger/ui/MergeListAdapter.java" />
       </list>
     </option>
   </component>
@@ -1162,6 +1157,28 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="contactmerger" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ContactMerger" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ContactMerger" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="contactmerger" />
+              <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ui" />
               <option name="myItemType" value="com.android.tools.idea.gradle.projectView.AndroidPsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -1501,6 +1518,14 @@
             <element signature="imports" expanded="true" />
             <element signature="e#4025#4033#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/de/measite/contactmerger/ui/MergeListAdapter.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.058500916" vertical-offset="493" max-vertical-offset="5520">
+          <caret line="76" column="9" selection-start-line="76" selection-start-column="9" selection-end-line="76" selection-end-column="9" />
+          <folding />
         </state>
       </provider>
     </entry>

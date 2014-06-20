@@ -55,6 +55,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
     protected Activity activity;
     protected Typeface font;
     protected File modelFile;
+    protected File tmpModelFile;
 
     public MergeListAdapter(Activity activity) {
         super();
@@ -79,9 +80,18 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
     public synchronized void update() {
         File path = activity.getDatabasePath("contactsgraph");
         modelFile = new File(path, "model.kryo.gz");
+        long lastModified = modelFile.lastModified();
+        tmpModelFile = new File(path, "model-tmp-" + lastModified + ".kryo.gz");
 
         try {
-            this.model = ModelIO.load(modelFile);
+            if (!tmpModelFile.exists()) {
+                for (File f : path.listFiles()) {
+                    if (f.getName().startsWith("model-tmp-")) f.delete();
+                }
+                this.model = ModelIO.load(modelFile);
+            } else {
+                this.model = ModelIO.load(tmpModelFile);
+            }
             notifyDataSetChanged();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -112,8 +122,8 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
                             notifyDataSetInvalidated();
                         }
                     });
-                    File modelFile = new File(path, "model.kryo.gz");
-                    ModelIO.store(model, modelFile);
+                    File tmpModelFile = new File(path, "model.kryo.gz");
+                    ModelIO.store(model, tmpModelFile);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -213,7 +223,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
             // should never happen....
             model.remove(position);
             try {
-                ModelIO.store(model, modelFile);
+                ModelIO.store(model, tmpModelFile);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -359,7 +369,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
                     model.remove(pos);
                 }
                 try {
-                    ModelIO.store(model, modelFile);
+                    ModelIO.store(model, tmpModelFile);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -382,7 +392,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
             final MergeContact contact = model.get(pos);
             model.remove(pos);
             try {
-                ModelIO.store(model, modelFile);
+                ModelIO.store(model, tmpModelFile);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
