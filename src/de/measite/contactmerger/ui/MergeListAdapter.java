@@ -65,7 +65,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
         this.activity = activity;
 
-        if (model.size() == 0) update();
+        update();
 
         provider =
             activity.getContentResolver().acquireContentProviderClient(

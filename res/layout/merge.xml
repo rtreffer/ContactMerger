@@ -36,6 +36,12 @@
         android:text="Analyzing your contacts.\nThis can take a few minutes."
     />
 
+    <ViewSwitcher
+        android:id="@+id/switcher_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+
     <!-- List -->
     <ListView
         android:id="@+id/contact_merge_list"
@@ -44,6 +50,19 @@
         android:background="#ffffff"
     />
 
+    <!-- Dummy text -->
+    <TextView
+        android:id="@+id/all_done"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="18sp"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:lines="2"
+        android:text="Your contact list is clean. Congratulations!"
+    />
+
+    </ViewSwitcher>
     </ViewSwitcher>
 
 </LinearLayout>

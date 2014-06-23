@@ -66,6 +66,9 @@ public class MergeActivity extends Activity {
 
         startService(new Intent(getApplicationContext(), AnalyzerService.class));
 
+        ListView list = (ListView)findViewById(R.id.contact_merge_list);
+        list.setAdapter(this.adapter = new MergeListAdapter(this));
+        list.postInvalidate();
         updateList();
 
         if (savedInstanceState != null) {
@@ -77,26 +80,31 @@ public class MergeActivity extends Activity {
         progressBar = (ProgressBar)findViewById(R.id.analyze_progress);
         progressBar.setVisibility(View.INVISIBLE);
 
-        ListView list = (ListView)findViewById(R.id.contact_merge_list);
         ViewSwitcher switcher = (ViewSwitcher)findViewById(R.id.switcher);
+        ViewSwitcher switcher_list = (ViewSwitcher)findViewById(R.id.switcher_list);
 
         Context context = getApplicationContext();
         File path = context.getDatabasePath("contactsgraph");
         File modelFile = new File(path, "model.kryo.gz");
 
         if (modelFile.exists()) {
-            if (switcher.getCurrentView().getId() == R.id.load_text) {
-                Log.d(TAG, "Show list");
+            this.adapter.update();
+            while (switcher.getCurrentView().getId() != R.id.switcher_list) {
                 switcher.showNext();
             }
-            list.setAdapter(this.adapter = new MergeListAdapter(this));
-            list.postInvalidate();
+            if (adapter.getCount() == 0) {
+                while (switcher_list.getCurrentView().getId() != R.id.all_done) {
+                    switcher_list.showNext();
+                }
+            } else {
+                while (switcher_list.getCurrentView().getId() != R.id.contact_merge_list) {
+                    switcher_list.showPrevious();
+                }
+            }
         } else {
-            if (switcher.getCurrentView().getId() == R.id.contact_merge_list) {
-                Log.d(TAG, "Show text");
+            while (switcher.getCurrentView().getId() != R.id.contact_merge_list) {
                 switcher.showPrevious();
             }
-            switcher.bringChildToFront(findViewById(R.id.load_text));
         }
         switcher.postInvalidate();
     }
