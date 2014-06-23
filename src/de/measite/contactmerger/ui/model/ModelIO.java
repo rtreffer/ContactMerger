@@ -1,5 +1,6 @@
 package de.measite.contactmerger.ui.model;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -14,6 +15,18 @@ import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 
 public class ModelIO {
+
+    public static byte[] generate(ArrayList<MergeContact> model) throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Kryo kryo = new Kryo();
+        register(kryo);
+        Output output = new Output(new GZIPOutputStream(baos));
+        kryo.writeObject(output, model);
+        output.flush();
+        output.close();
+        return baos.toByteArray();
+    }
 
     public static void store(ArrayList<MergeContact> model, File file)
             throws FileNotFoundException, IOException

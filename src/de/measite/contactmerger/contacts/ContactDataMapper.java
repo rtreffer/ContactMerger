@@ -1,6 +1,8 @@
 package de.measite.contactmerger.contacts;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Map;
 
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -16,6 +18,7 @@ import android.provider.ContactsContract.Data;
 import android.provider.ContactsContract.RawContacts;
 import android.provider.ContactsContract.StatusUpdates;
 import de.measite.contactmerger.contacts.StatusUpdate.Presence;
+import de.measite.contactmerger.util.ShiftedExpireLRU;
 
 /**
  * <p>The ContactsDataMapper is responsible for mapping {@link RawContact} and
@@ -45,6 +48,46 @@ public class ContactDataMapper {
      * The contacts content provider client.
      */
     private final ContentProviderClient provider;
+
+    /**
+     * An optional cache.
+     */
+    private Map<MethodCall, Object> cache = null;
+
+    public void setCache(ShiftedExpireLRU cache) {
+        this.cache = cache;
+    }
+
+    public static class MethodCall {
+        public final long created;
+        public final String method;
+        public final Object[] args;
+        public MethodCall(String method, Object ... args) {
+            this.method = method;
+            this.args = args;
+            this.created = System.currentTimeMillis();
+        }
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MethodCall that = (MethodCall) o;
+
+            // Probably incorrect - comparing Object[] arrays with Arrays.equals
+            if (!Arrays.equals(args, that.args)) return false;
+            if (!method.equals(that.method)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = method.hashCode();
+            result = 31 * result + Arrays.hashCode(args);
+            return result;
+        }
+    }
 
     /**
      * Create a new data mapper on top of a given contacts provider client.
@@ -266,6 +309,13 @@ public class ContactDataMapper {
 
     public Contact getContactById(int id, boolean rawContacts, boolean metadata) {
         Contact contact = null;
+
+        if (cache != null) {
+            MethodCall call = new MethodCall("getContactById", id, rawContacts, metadata);
+            contact = (Contact)cache.get(call);
+            if (contact != null) return contact;
+        }
+
         // step 1, load contact
         try {
             Cursor cursor = provider.query(
@@ -320,6 +370,12 @@ public class ContactDataMapper {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+
+        if (contact != null && cache != null) {
+            MethodCall call = new MethodCall("getContactById", id, rawContacts, metadata);
+            cache.put(call, contact);
+        }
+
         return contact;
     }
 

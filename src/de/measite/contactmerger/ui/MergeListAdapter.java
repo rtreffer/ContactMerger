@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicLong;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -15,7 +16,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
-import android.os.Handler;
 import android.provider.ContactsContract;
 import android.provider.ContactsContract.CommonDataKinds.Email;
 import android.provider.ContactsContract.CommonDataKinds.Phone;
@@ -38,15 +38,15 @@ import de.measite.contactmerger.contacts.Metadata;
 import de.measite.contactmerger.contacts.NicknameMetadata;
 import de.measite.contactmerger.contacts.PhotoMetadata;
 import de.measite.contactmerger.contacts.RawContact;
-import de.measite.contactmerger.graph.UndirectedGraph;
 import de.measite.contactmerger.ui.model.MergeContact;
 import de.measite.contactmerger.ui.model.ModelIO;
+import de.measite.contactmerger.ui.model.ModelSavePool;
 import de.measite.contactmerger.ui.model.RootContact;
+import de.measite.contactmerger.util.ShiftedExpireLRU;
 
 public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
     protected static final String TAG = "ContactMerger/MergeListAdapter";
-    protected UndirectedGraph<Long, Double> graph;
     protected Thread transform;
     protected ArrayList<MergeContact> model;
     protected ContentProviderClient provider;
@@ -56,6 +56,8 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
     protected Typeface font;
     protected File modelFile;
     protected File tmpModelFile;
+    protected long timestamp;
+    protected static AtomicLong generation = new AtomicLong();
 
     public MergeListAdapter(Activity activity) {
         super();
@@ -69,12 +71,10 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
             activity.getContentResolver().acquireContentProviderClient(
                 ContactsContract.AUTHORITY_URI);
         contactMapper = new ContactDataMapper(provider);
+        contactMapper.setCache(new ShiftedExpireLRU(5 * 60 * 1000, 100));
         layoutInflater = activity.getLayoutInflater();
         font = Typeface.createFromAsset(
                     activity.getAssets(), "fontawesome-webfont.ttf" );
-        if (this.model.size() == 0 && graph != null) {
-            update(graph);
-        }
     }
 
     public synchronized void update() {
@@ -98,39 +98,6 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public synchronized void update(final UndirectedGraph<Long, Double> graph) {
-        this.graph = graph;
-        if (transform != null) {
-            transform.interrupt();
-            try {
-                transform.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-        final Handler h = new Handler();
-        final File path = activity.getDatabasePath("contactsgraph");
-        Thread t = new Thread() {
-            public void run() {
-                try {
-                    model = GraphConverter.convert(graph, provider);
-                    h.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            notifyDataSetInvalidated();
-                        }
-                    });
-                    File tmpModelFile = new File(path, "model.kryo.gz");
-                    ModelIO.store(model, tmpModelFile);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        };
-        t.start();
-        transform = t;
     }
 
     @Override
@@ -219,16 +186,10 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         MergeContact mcontact = model.get(position);
         Contact contact =
                 contactMapper.getContactById((int)mcontact.id, true, true);
-        if (contact == null) {
+        if (contact == null || (mcontact instanceof RootContact && ((RootContact)mcontact).contacts.size() == 0)) {
             // should never happen....
             model.remove(position);
-            try {
-                ModelIO.store(model, tmpModelFile);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
             notifyDataSetChanged();
             spacer.setVisibility(View.GONE);
             accept.setVisibility(View.GONE);
@@ -368,14 +329,8 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
                 while (pos < model.size() && !(model.get(pos) instanceof RootContact)) {
                     model.remove(pos);
                 }
-                try {
-                    ModelIO.store(model, tmpModelFile);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
                 notifyDataSetChanged();
+                ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
                 RootContact root = (RootContact) contact;
                 long ids[] = new long[root.contacts.size() + 1];
                 ids[root.contacts.size()] = root.id;
@@ -391,13 +346,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
             Log.d("MergeListAdapter", "remove " + pos);
             final MergeContact contact = model.get(pos);
             model.remove(pos);
-            try {
-                ModelIO.store(model, tmpModelFile);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
             contact.root.contacts.remove(contact);
             if (contact.root.contacts.size() == 0) {
                 model.remove(contact.root);
