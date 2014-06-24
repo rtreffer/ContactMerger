@@ -56,7 +56,7 @@ public class AnalyzerService extends Service {
 
         startIfNeeded();
 
-        if (intent.getBooleanExtra("forceRunning", false)) {
+        if (intent.hasExtra("forceRunning") && intent.getBooleanExtra("forceRunning", false)) {
             startThread();
         }
 
@@ -117,6 +117,12 @@ public class AnalyzerService extends Service {
 
         // collect file information
         File path = getDatabasePath("contactsgraph");
+        if (!path.exists()) {
+            if (!path.mkdirs() && !path.isDirectory()) {
+                // this is a bug, the app is not yet ready
+                return;
+            }
+        }
         File graphFile = new File(path, "graph.kryo.gz");
         File modelFile = new File(path, "model.kryo.gz");
         boolean graphFileExists =
@@ -131,9 +137,13 @@ public class AnalyzerService extends Service {
             return;
         }
 
-        // 2. Plugged in, battery good -> go (bit not more often than once per 6 hours)
+        if (level <= 0.25) {
+            return;
+        }
+
+        // 2. Plugged in, battery good -> go (bit not more often than once per 24 hours)
         if (!onBattery && level > 0.95) {
-            if (graphFile.lastModified() + 12 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+            if (graphFile.lastModified() + 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to good battery and old data");
                 startThread();
                 return;
@@ -141,7 +151,7 @@ public class AnalyzerService extends Service {
         }
 
         if (!onBattery && level > 0.75) {
-            if (graphFile.lastModified() + 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+            if (graphFile.lastModified() + 48 * 60 * 60 * 1000 < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to ok battery and old data");
                 startThread();
                 return;
@@ -149,14 +159,14 @@ public class AnalyzerService extends Service {
         }
 
         // 3. Really old data + plugged in?
-        if (!onBattery && graphFile.lastModified() + 3 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+        if (!onBattery && graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to old data (on battery)");
             startThread();
             return;
         }
 
-        // 4. we should run once per week, at least
-        if (level > 0.25 && graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+        // 4. we should only run on battery if everything else fails
+        if (graphFile.lastModified() + 21 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to very old data");
             startThread();
             return;
@@ -241,6 +251,8 @@ public class AnalyzerService extends Service {
                                 .setTicker("Merge " + count + " contacts")
                                 .setAutoCancel(true);
                         notificationManager.notify(1, ibuilder.build());
+                    } else {
+                        notificationManager.cancel(1);
                     }
                 }
                 new Thread() {

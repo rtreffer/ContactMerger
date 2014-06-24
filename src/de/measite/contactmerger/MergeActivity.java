@@ -101,6 +101,7 @@ public class MergeActivity extends Activity {
                     switcher_list.showPrevious();
                 }
             }
+            switcher_list.postInvalidate();
         } else {
             while (switcher.getCurrentView().getId() != R.id.contact_merge_list) {
                 switcher.showPrevious();

@@ -108,6 +108,18 @@ public class SeperateThread extends Thread {
                     ContactsContract.AggregationExceptions.RAW_CONTACT_ID2,
                     idb)
                 .build());
+                ops.add(ContentProviderOperation.newUpdate(
+                    ContactsContract.AggregationExceptions.CONTENT_URI)
+                .withValue(
+                    ContactsContract.AggregationExceptions.TYPE,
+                    ContactsContract.AggregationExceptions.TYPE_KEEP_SEPARATE)
+                .withValue(
+                    ContactsContract.AggregationExceptions.RAW_CONTACT_ID1,
+                    idb)
+                .withValue(
+                    ContactsContract.AggregationExceptions.RAW_CONTACT_ID2,
+                    ida)
+                .build());
                 if (ops.size() > 100) {
                     try {
                         contactsProvider.applyBatch(ops);

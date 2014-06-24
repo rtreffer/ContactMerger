@@ -108,12 +108,12 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
     @Override
     public Object getItem(int position) {
-        return (model == null) ? null : model.get(position);
+        return (model == null || position >= model.size()) ? null : model.get(position);
     }
 
     @Override
     public long getItemId(int position) {
-        return (model == null) ? 0l : model.get(position).id;
+        return (model == null || position >= model.size()) ? 0l : model.get(position).id;
     }
 
     private static class DisplayMeta implements Comparable<DisplayMeta> {
@@ -184,18 +184,18 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         accept.setOnClickListener(this);
         remove.setOnClickListener(this);
 
-        MergeContact mcontact = model.get(position);
-        Contact contact =
+        MergeContact mcontact = (position >= model.size()) ? null : model.get(position);
+        Contact contact = (mcontact == null) ? null :
                 contactMapper.getContactById((int)mcontact.id, true, true);
         if (contact == null || (mcontact instanceof RootContact && ((RootContact)mcontact).contacts.size() == 0)) {
             // should never happen....
-            model.remove(position);
+            if (position < model.size()) model.remove(position);
             ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
             notifyDataSetChanged();
             spacer.setVisibility(View.GONE);
             accept.setVisibility(View.GONE);
             remove.setVisibility(View.GONE);
-            name.setText("");;
+            name.setText("");
             return view;
         }
 
@@ -346,6 +346,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         if ("remove".equals(v.getTag())) {
             Log.d("MergeListAdapter", "remove " + pos);
             final MergeContact contact = model.get(pos);
+            new SeperateThread(provider, contact.root.id, contact.id).start();
             model.remove(pos);
             ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
             contact.root.contacts.remove(contact);

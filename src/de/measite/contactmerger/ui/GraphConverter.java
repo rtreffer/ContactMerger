@@ -5,9 +5,13 @@ import java.util.Collections;
 import java.util.TreeSet;
 
 import android.content.ContentProviderClient;
+import android.database.Cursor;
+import android.os.RemoteException;
+import android.provider.ContactsContract;
 import android.util.SparseArray;
 import de.measite.contactmerger.contacts.Contact;
 import de.measite.contactmerger.contacts.ContactDataMapper;
+import de.measite.contactmerger.contacts.RawContact;
 import de.measite.contactmerger.graph.UndirectedGraph;
 import de.measite.contactmerger.ui.model.MergeContact;
 import de.measite.contactmerger.ui.model.RootContact;
@@ -37,13 +41,83 @@ public class GraphConverter {
 
             // different contacts
 
-            Contact left = mapper.getContactById(c1, false, false);
-            Contact right = mapper.getContactById(c2, false, false);
+            Contact left = mapper.getContactById(c1, true, false);
+            Contact right = mapper.getContactById(c2, true, false);
 
             if (left == null) {
                 continue;
             }
             if (right == null) {
+                continue;
+            }
+            if (left.getId() == right.getId()) {
+                continue;
+            }
+
+            // check if those 2 contacts should be kept separate
+            boolean separate = false;
+            StringBuilder sb = new StringBuilder();
+            for (RawContact l : left.getRawContacts()) {
+                if (sb.length() > 1) {
+                    sb.append(",");
+                }
+                sb.append(l.getID());
+            }
+            String leftIn = sb.toString();
+            sb.setLength(0);
+            for (RawContact r : right.getRawContacts()) {
+                if (sb.length() > 1) {
+                    sb.append(",");
+                }
+                sb.append(r.getID());
+            }
+            String rightIn = sb.toString();
+            try {
+                Cursor c = provider.query(
+                    ContactsContract.AggregationExceptions.CONTENT_URI,
+                    new String[]{ContactsContract.AggregationExceptions.TYPE},
+                    ContactsContract.AggregationExceptions.RAW_CONTACT_ID1 + " IN (" + leftIn + ") AND " +
+                    ContactsContract.AggregationExceptions.RAW_CONTACT_ID2 + " IN (" + rightIn + ")",
+                    null,null
+                );
+                if (c.moveToFirst()) while (!c.isAfterLast()) {
+                    final int index = c.getColumnIndex(ContactsContract.AggregationExceptions.TYPE);
+                    int type = c.getInt(index);
+                    if (type == ContactsContract.AggregationExceptions.TYPE_KEEP_SEPARATE) {
+                        separate = true;
+                        break;
+                    }
+                    c.moveToNext();
+                }
+                c.close();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            if (separate) {
+                continue;
+            }
+            try {
+                Cursor c = provider.query(
+                        ContactsContract.AggregationExceptions.CONTENT_URI,
+                        new String[]{ContactsContract.AggregationExceptions.TYPE},
+                        ContactsContract.AggregationExceptions.RAW_CONTACT_ID1 + " IN (" + rightIn + ") AND " +
+                                ContactsContract.AggregationExceptions.RAW_CONTACT_ID2 + " IN (" + leftIn + ")",
+                        null,null
+                );
+                if (c.moveToFirst()) while (!c.isAfterLast()) {
+                    final int index = c.getColumnIndex(ContactsContract.AggregationExceptions.TYPE);
+                    int type = c.getInt(index);
+                    if (type == ContactsContract.AggregationExceptions.TYPE_KEEP_SEPARATE) {
+                        separate = true;
+                        break;
+                    }
+                    c.moveToNext();
+                }
+                c.close();
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+            if (separate) {
                 continue;
             }
 
