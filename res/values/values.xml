@@ -3,7 +3,7 @@
 
     <string name="aboutLibraries_description_showIcon">true</string>
     <string name="aboutLibraries_description_showVersion">true</string>
-    <string name="aboutLibraries_description_text">ContactMerger is developed by\nRené Treffer\nFranziska-Bilek-Weg 7\nD-80339 München\nGermany\n\nBut it would not have been possible without these great libraries.</string>
+    <string name="aboutLibraries_description_text">ContactMerger was developed by\nRené Treffer\nFranziska-Bilek-Weg 7\nD-80339 München\nGermany\n\nBut it would not have been possible without these great libraries.</string>
 
     <!-- lucene licence -->
     <string name="define_Lucene"></string>
