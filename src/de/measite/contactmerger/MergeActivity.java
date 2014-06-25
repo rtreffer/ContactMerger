@@ -87,7 +87,7 @@ public class MergeActivity extends Activity {
         File path = context.getDatabasePath("contactsgraph");
         File modelFile = new File(path, "model.kryo.gz");
 
-        if (modelFile.exists()) {
+        if (path.exists() && modelFile.exists()) {
             this.adapter.update();
             while (switcher.getCurrentView().getId() != R.id.switcher_list) {
                 switcher.showNext();
@@ -103,7 +103,7 @@ public class MergeActivity extends Activity {
             }
             switcher_list.postInvalidate();
         } else {
-            while (switcher.getCurrentView().getId() != R.id.contact_merge_list) {
+            if (switcher.getCurrentView().getId() == R.id.contact_merge_list) {
                 switcher.showPrevious();
             }
         }
