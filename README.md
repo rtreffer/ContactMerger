@@ -7,3 +7,4 @@ of mergable contacts.
 The Service will run whenever the systems battery status is good, the data is
 old and/or the phone is plugged in.
 
+It is available under the terms of the Apache Licence Version 2.
