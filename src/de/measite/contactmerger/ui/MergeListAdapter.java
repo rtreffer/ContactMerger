@@ -79,12 +79,13 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
     public synchronized void update() {
         File path = activity.getDatabasePath("contactsgraph");
+        if (path == null) return;
         modelFile = new File(path, "model.kryo.gz");
         timestamp = modelFile.lastModified();
         tmpModelFile = new File(path, "model-tmp-" + timestamp + ".kryo.gz");
 
         try {
-            if (!tmpModelFile.exists()) {
+            if (!tmpModelFile.exists() && path.exists()) {
                 for (File f : path.listFiles()) {
                     if (f.getName().startsWith("model-tmp-")) f.delete();
                 }
