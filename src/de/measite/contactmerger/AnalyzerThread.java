@@ -365,7 +365,10 @@ public class AnalyzerThread extends Thread {
                     all = all + " " + contact.getSortKeyAlternative();
                 }
 
-                for (RawContact raw : contact.getRawContacts()) {
+                RawContact[] raws = contact.getRawContacts();
+                if (raws == null) continue;
+
+                for (RawContact raw : raws) {
                     if (!empty(raw.getAccountType()) && !empty(raw.getAccountName())) {
                         doc.add(new TextField(
                             "account_type_" + raw.getAccountType(),
