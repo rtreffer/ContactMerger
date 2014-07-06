@@ -176,6 +176,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         view.setTag(position);
 
         TextView spacer = (TextView)view.findViewById(R.id.contact_tree_spacer);
+        TextView rootSeperator = (TextView)view.findViewById(R.id.contact_tree_root_seperator);
         ImageView picture = (ImageView)view.findViewById(R.id.contact_picture);
         TextView name = (TextView)view.findViewById(R.id.contactname);
         TextView details = (TextView)view.findViewById(R.id.contactdetails);
@@ -208,6 +209,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         spacer.setVisibility(isRoot ? View.GONE : View.VISIBLE);
         accept.setVisibility(isRoot ? View.VISIBLE : View.GONE);
         remove.setVisibility(isRoot ? View.GONE : View.VISIBLE);
+        rootSeperator.setVisibility(isRoot ? View.VISIBLE : View.GONE);
 
         name.setText(contact.getDisplayName());
         name.setTextSize(isRoot ? 20 : 14);
