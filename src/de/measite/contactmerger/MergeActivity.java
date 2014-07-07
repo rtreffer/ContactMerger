@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.ViewSwitcher;
 import de.measite.contactmerger.ui.MergeListAdapter;
 
@@ -28,6 +29,7 @@ public class MergeActivity extends Activity {
     protected static final String TAG = "ContactMerger/MergeActivity";
 
     protected ProgressBar progressBar;
+    protected TextView loadText;
 
     protected BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -45,12 +47,15 @@ public class MergeActivity extends Activity {
                 progressBar.setMax(1000);
                 progressBar.setVisibility(View.VISIBLE);
                 progressBar.postInvalidate();
+                loadText.setText("Analyzing your contacts.\nThis can take a few minutes.\n" +
+                        ((int)(f * 100)) + "%"
+                );
                 return;
             }
             if ("finish".equals(event)) {
                 progressBar.setProgress(1000);
                 progressBar.setMax(1000);
-                progressBar.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.GONE);
                 updateList();
                 return;
             }
@@ -78,7 +83,9 @@ public class MergeActivity extends Activity {
 
     public void updateList() {
         progressBar = (ProgressBar)findViewById(R.id.analyze_progress);
-        progressBar.setVisibility(View.INVISIBLE);
+        progressBar.setVisibility(View.GONE);
+
+        loadText = (TextView) findViewById(R.id.load_text);
 
         ViewSwitcher switcher = (ViewSwitcher)findViewById(R.id.switcher);
         ViewSwitcher switcher_list = (ViewSwitcher)findViewById(R.id.switcher_list);

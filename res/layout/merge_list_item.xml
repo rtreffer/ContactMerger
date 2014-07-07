@@ -4,13 +4,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
+    android:id="@+id/merge_contact_root"
 >
 
     <TextView
         android:id="@+id/contact_tree_root_seperator"
         android:layout_width="match_parent"
         android:layout_height="2dip"
-        android:background="#aaa"
+        android:layout_marginBottom="4dip"
+        android:background="#ffd1d1d1"
         android:text=""
         android:visibility="gone" />
 
@@ -31,7 +33,9 @@
         android:id="@+id/contact_picture"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:layout_margin="4dip"
+        android:layout_marginBottom="4dip"
+        android:layout_marginLeft="4dip"
+        android:layout_marginRight="4dip"
         android:background="@android:color/darker_gray"
         tools:ignore="ContentDescription" />
 
@@ -61,43 +65,57 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/button_seperator"
-        android:layout_width="1dp"
-        android:layout_height="fill_parent"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="6dp"
-        android:layout_marginRight="6dip"
-        android:text=""
-        android:background="#f0f0f0"
-    />
-    
-    <TextView
         android:id="@+id/accept"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:minHeight="48sp"
         android:text="@string/fa_check"
+        android:background="@drawable/border_left_bottom"
         android:visibility="visible"
         android:textSize="48sp"
         android:tag="accept"
-        android:textColor="#5E9B00"
+        android:textColor="#ff00b50e"
+        android:gravity="center"
         android:paddingTop="2sp"
-        android:paddingLeft="2sp"
+        android:paddingLeft="8sp"
         android:paddingBottom="2sp"
         android:paddingRight="8dip"
         android:layout_gravity="center_vertical"
     />
 
-    <TextView
+        <TextView
+            android:id="@+id/add"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:minHeight="34sp"
+            android:background="@drawable/border_left_bottom"
+            android:text="@string/fa_plus"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textSize="34sp"
+            android:tag="add"
+            android:textColor="#ff0112ec"
+            android:paddingTop="2sp"
+            android:paddingLeft="8sp"
+            android:paddingBottom="2sp"
+            android:paddingRight="8dip"
+            android:layout_gravity="center_vertical"
+            />
+
+        <TextView
         android:id="@+id/remove"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:minHeight="34sp"
+        android:background="@drawable/border_left_bottom"
         android:text="@string/fa_ban"
+        android:gravity="center"
         android:visibility="visible"
         android:textSize="34sp"
         android:tag="remove"
-        android:textColor="#730D00"
+        android:textColor="#ffc01300"
         android:paddingTop="2sp"
-        android:paddingLeft="2sp"
+        android:paddingLeft="8sp"
         android:paddingBottom="2sp"
         android:paddingRight="8dip"
         android:layout_gravity="center_vertical"

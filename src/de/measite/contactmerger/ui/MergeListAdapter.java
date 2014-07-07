@@ -59,6 +59,10 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
     protected long timestamp;
     protected static AtomicLong generation = new AtomicLong();
 
+    protected final static int rootBG = Color.rgb(255, 255, 255);
+    protected final static int mergeBGa = Color.rgb(255, 255, 246);
+    protected final static int mergeBGb = Color.rgb(248, 248, 255);
+
     public MergeListAdapter(Activity activity) {
         super();
         model = new ArrayList<MergeContact>();
@@ -213,7 +217,13 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
         name.setText(contact.getDisplayName());
         name.setTextSize(isRoot ? 20 : 14);
-        view.setBackgroundColor(isRoot ? Color.rgb(255, 255, 255) : Color.rgb(250, 250, 250));
+
+        if (isRoot) {
+            view.setBackgroundColor(rootBG);
+        } else {
+            int relPos = mcontact.root.contacts.indexOf(mcontact);
+            view.setBackgroundColor((relPos % 2 == 0) ? mergeBGa : mergeBGb);
+        }
 
         // update picture
 
@@ -260,7 +270,6 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
                 4,
                 activity.getResources().getDisplayMetrics());
         params.bottomMargin = isRoot ? px : 0;
-        params.topMargin = isRoot ? px : 0;
         picture.setLayoutParams(params);
 
         TreeSet<DisplayMeta> data = new TreeSet<DisplayMeta>(); 
@@ -323,7 +332,13 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
 
     @Override
     public void onClick(View v) {
-        int pos = (Integer)((View)v.getParent()).getTag();
+        View t = v;
+        while (t.getParent() != null &&
+               t.getId() != R.id.merge_contact_root &&
+               t.getParent() instanceof View) {
+            t = (View)t.getParent();
+        }
+        int pos = (Integer)t.getTag();
 
         Log.d("MergeListAdapter", "click " + v.getClass() + "/" + v.getTag());
 

@@ -10,11 +10,11 @@
     <ProgressBar
         android:id="@+id/analyze_progress"
         style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_height="2dip"
+        android:layout_height="3dip"
         android:layout_margin="0dip"
         android:padding="0dip"
         android:layout_width="match_parent"
-        android:visibility="invisible"
+        android:visibility="gone"
     />
 
     <!-- layout for dummy text + list -->
@@ -29,11 +29,11 @@
         android:id="@+id/load_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="18sp"
+        android:paddingTop="20sp"
         android:textSize="20sp"
         android:gravity="center"
-        android:lines="2"
-        android:text="Analyzing your contacts.\nThis can take a few minutes."
+        android:lines="3"
+        android:text="Analyzing your contacts.\nThis can take a few minutes.\n"
     />
 
     <ViewSwitcher
@@ -47,6 +47,8 @@
         android:id="@+id/contact_merge_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="0dip"
         android:background="#ffffff"
     />
 

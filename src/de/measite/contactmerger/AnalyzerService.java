@@ -60,30 +60,7 @@ public class AnalyzerService extends Service {
             startThread();
         }
 
-        checkStop();
-
-        return START_NOT_STICKY;
-    }
-
-    protected void checkStop() {
-        if (analyzer == null || !analyzer.isAlive()) {
-            Log.d(TAG, "Should stop AnalyzerService");
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {}
-                    Log.d(TAG, "Stopping AnalyzerService");
-                    analyzer = null;
-                    stopSelf();
-                    new Handler(getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {}
-                    });
-                }
-            }.start();
-        }
+        return START_STICKY;
     }
 
     protected void registerAlarm() {
@@ -255,16 +232,6 @@ public class AnalyzerService extends Service {
                         notificationManager.cancel(1);
                     }
                 }
-                new Thread() {
-
-                    @Override
-                    public void run() {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {}
-                        checkStop();
-                    }
-                }.start();
             }
         });
     }
