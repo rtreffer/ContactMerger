@@ -360,14 +360,14 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
                     ids[i] = root.contacts.get(i).id;
                 }
                 Log.d("MergeListAdapter", "Merging " + ids.length + " contacts");
-                new MergeThread(provider, ids).start();
+                new MergeThread(activity, provider, contactMapper, ids).start();
             }
         }
 
         if ("remove".equals(v.getTag())) {
             Log.d("MergeListAdapter", "remove " + pos);
             final MergeContact contact = model.get(pos);
-            new SeparateThread(provider, contact.root.id, contact.id).start();
+            new SeparateThread(activity.getApplicationContext(), provider, contactMapper, contact.root.id, contact.id).start();
             model.remove(pos);
             ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
             contact.root.contacts.remove(contact);

@@ -3,12 +3,15 @@
 
     <string name="app_name">Contact Merger</string>
     <string name="title_activity_merge">Contact Merger</string>
-
-    <string name="fa_check">&#xf00c;</string>
-    <string name="fa_times">&#xf00d;</string>
-    <string name="fa_ban">&#xf05e;</string>
-    <string name="fa_plus">&#xf067;</string>
+    <string name="fa_check"></string>
+    <string name="fa_times"></string>
+    <string name="fa_ban"></string>
+    <string name="fa_plus"></string>
     <string name="analyze_now">Analyze</string>
     <string name="about">About</string>
+    <string name="action_log">Action log</string>
+    <string name="title_activity_log">LogActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
 
 </resources>

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.util.Log;
 
 /**
  * Action log database, will allow undo operations.
@@ -18,25 +19,30 @@ public class Database {
         }
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL("CREATE TABLE actionlog(" +
-                "_id INTEGER PRIMARY KEY," +
-                "timestamp INTEGER," +
-                "description TEXT" +
-                "actiontype INTEGER" +
-                "undone INTEGER" +
-                ")"
-            );
-            db.execSQL("CREATE TABLE actionchanges(" +
-                "_id INTEGER PRIMARY KEY," +
-                "actionLogId INTEGER," +
-                "rawContact1 INTEGER," +
-                "rawContact2 INTEGER," +
-                "oldValue INTEGER," +
-                "newValue INTEGER" +
-                ")"
-            );
-            db.execSQL("CREATE INDEX actions_by_time ON actionlog ( timestamp DESC );");
-            db.execSQL("CREATE INDEX changes_by_action ON actionchanges ( actionLogId ASC );");
+            try {
+                db.execSQL("CREATE TABLE actionlog(" +
+                                "_id INTEGER PRIMARY KEY," +
+                                "timestamp INTEGER," +
+                                "description TEXT," +
+                                "actiontype INTEGER," +
+                                "undone INTEGER" +
+                                ")"
+                );
+                db.execSQL("CREATE TABLE actionchanges(" +
+                                "_id INTEGER PRIMARY KEY," +
+                                "actionLogId INTEGER," +
+                                "rawContact1 INTEGER," +
+                                "rawContact2 INTEGER," +
+                                "oldValue INTEGER," +
+                                "newValue INTEGER" +
+                                ")"
+                );
+                db.execSQL("CREATE INDEX actions_by_time ON actionlog ( timestamp DESC );");
+                db.execSQL("CREATE INDEX changes_by_action ON actionchanges ( actionLogId ASC );");
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw e;
+            }
         }
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
@@ -55,8 +61,8 @@ public class Database {
     private final static Uri URI = Uri.parse("content://" + Database.class.getCanonicalName() + "/actions");
 
     public static class Change {
-        public int rawContactId1;
-        public int rawContactId2;
+        public long rawContactId1;
+        public long rawContactId2;
         public int oldValue;
         public int newValue;
     }
@@ -68,6 +74,7 @@ public class Database {
 
         if (changes.length == 0) {
             // we need an action in this case 0.o
+            Log.d("ActionDatabase", "log without actions: " + description);
             return -1;
         }
 
@@ -84,6 +91,7 @@ public class Database {
         values.put("timestamp", now);
         values.put("actiontype", 1);
         values.put("undone", false);
+        values.put("description", description);
 
         long id = db.insert("actionlog", null, values);
 

@@ -284,7 +284,7 @@ public class ContactDataMapper {
     private final static String[] CONTACT_OF_RAW_CONTACT_PROJECTION =
             new String[]{RawContacts.CONTACT_ID};
 
-    public int getContactByRawContactID(int id) {
+    public int getContactByRawContactID(long id) {
         int result = 0;
         try {
             Cursor cursor = provider.query(
@@ -307,7 +307,7 @@ public class ContactDataMapper {
         return result;
     }
 
-    public Contact getContactById(int id, boolean rawContacts, boolean metadata) {
+    public Contact getContactById(long id, boolean rawContacts, boolean metadata) {
         Contact contact = null;
 
         if (cache != null) {

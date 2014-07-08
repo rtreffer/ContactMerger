@@ -4,14 +4,21 @@
 >
 
     <item
-        android:id="@+id/analyze_now"
+        android:id="@+id/action_log"
         android:orderInCategory="100"
+        android:icon="@android:drawable/ic_menu_agenda"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/action_log"/>
+
+    <item
+        android:id="@+id/analyze_now"
+        android:orderInCategory="200"
         android:showAsAction="never"
         android:title="@string/analyze_now"/>
 
     <item
         android:id="@+id/about"
-        android:orderInCategory="200"
+        android:orderInCategory="300"
         android:showAsAction="never"
         android:title="@string/about"/>
 

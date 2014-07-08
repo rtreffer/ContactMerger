@@ -1,6 +1,7 @@
 package de.measite.contactmerger.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
@@ -11,6 +12,8 @@ import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import de.measite.contactmerger.contacts.Contact;
+import de.measite.contactmerger.contacts.ContactDataMapper;
 import de.measite.contactmerger.log.Database;
 
 public class SeparateThread extends Thread {
@@ -24,13 +27,15 @@ public class SeparateThread extends Thread {
                     ContactsContract.AggregationExceptions.TYPE
             };
     protected final Context context;
+    protected final ContactDataMapper mapper;
     protected long[] id;
     protected ContentProviderClient contactsProvider;
     protected long root;
 
-    public SeparateThread(Context context, ContentProviderClient contactsProviderClient, long root, long... id) {
+    public SeparateThread(Context context, ContentProviderClient contactsProviderClient, ContactDataMapper mapper, long root, long... id) {
         this.contactsProvider = contactsProviderClient;
         this.context = context;
+        this.mapper = mapper;
         this.id = id;
         this.root = root;
     }
@@ -116,37 +121,10 @@ public class SeparateThread extends Thread {
 
                 Log.d("SeperateThread", "Separate RawContacts " + ida + "+" + idb);
 
-                int oldValue = ContactsContract.AggregationExceptions.TYPE_AUTOMATIC;
-                c = null;
-                try {
-                    c = contactsProvider.query(
-                            ContactsContract.AggregationExceptions.CONTENT_URI,
-                            CONTACTS_AGGEX_TYPE_PROJECTION,
-                            "(" +
-                                ContactsContract.AggregationExceptions.RAW_CONTACT_ID1 + "=" + ida +
-                                " AND " +
-                                ContactsContract.AggregationExceptions.RAW_CONTACT_ID2 + "=" + idb +
-                            ") OR (" +
-                                ContactsContract.AggregationExceptions.RAW_CONTACT_ID1 + "=" + idb +
-                                " AND " +
-                                ContactsContract.AggregationExceptions.RAW_CONTACT_ID2 + "=" + ida +
-                            ")",
-                            null, null);
-                    if (c != null && c.moveToFirst()) {
-                        final int columnIndex = c.getColumnIndex(ContactsContract.AggregationExceptions.TYPE);
-                        while (!c.isAfterLast()) {
-                            int v = c.getInt(columnIndex);
-                            if (v != ContactsContract.AggregationExceptions.TYPE_AUTOMATIC) {
-                                oldValue = v;
-                            }
-                        }
-                    }
-                } catch (RemoteException e) {
-                    e.printStackTrace();
+                int oldValue = mapper.getAggregationMode(ida, idb);
+                if (oldValue == ContactsContract.AggregationExceptions.TYPE_AUTOMATIC) {
+                    oldValue = mapper.getAggregationMode(idb, ida);
                 }
-                try {
-                    c.close();
-                } catch (Exception e) { /* No action required */ }
 
                 Database.Change change = new Database.Change();
                 change.rawContactId1 = ida;
@@ -202,7 +180,21 @@ public class SeparateThread extends Thread {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
-        Database.log(context, "Separate ", changes.toArray(new Database.Change[changes.size()]));
+        Contact contact = mapper.getContactById(root, false, false);
+        HashSet<String> names = new HashSet<>((1 + id.length) * 2 + 1);
+        names.add(contact.getDisplayName().toLowerCase());
+        StringBuilder sb = new StringBuilder(contact.getDisplayName());
+        for (long i : id) {
+            contact = mapper.getContactById(i, false, false);
+            if (contact == null) continue;
+            if (names.contains(contact.getDisplayName().toLowerCase())) {
+                continue;
+            }
+            names.add(contact.getDisplayName().toLowerCase());
+            sb.append(", ");
+            sb.append(contact.getDisplayName());
+        }
+        Database.log(context, "Separate " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
     }
 
 }

@@ -1,0 +1,43 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+>
+    <!-- Top bar for progress -->
+    <ProgressBar
+        android:id="@+id/analyze_progress"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_height="3dip"
+        android:layout_margin="0dip"
+        android:padding="0dip"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+    />
+
+    <ViewSwitcher
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/no_actions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20sp"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:lines="1"
+            android:text="No logged actions"
+            />
+
+        <ListView
+            android:id="@+id/action_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dip"
+            android:background="#ffffff"
+            android:paddingBottom="2dip"
+        />
+    </ViewSwitcher>
+</LinearLayout>

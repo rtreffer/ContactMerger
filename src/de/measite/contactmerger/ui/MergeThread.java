@@ -1,14 +1,20 @@
 package de.measite.contactmerger.ui;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
+import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.os.RemoteException;
 import android.provider.ContactsContract;
 import android.util.Log;
+
+import de.measite.contactmerger.contacts.Contact;
+import de.measite.contactmerger.contacts.ContactDataMapper;
+import de.measite.contactmerger.log.Database;
 
 public class MergeThread extends Thread {
 
@@ -19,9 +25,13 @@ public class MergeThread extends Thread {
 
     private long[] id;
     private ContentProviderClient contactsProvider;
+    protected final Context context;
+    protected final ContactDataMapper mapper;
 
-    public MergeThread(ContentProviderClient contactsProviderClient, long ... id) {
+    public MergeThread(Context context, ContentProviderClient contactsProviderClient, ContactDataMapper mapper, long ... id) {
         this.contactsProvider = contactsProviderClient;
+        this.context = context;
+        this.mapper = mapper;
         this.id = id;
     }
 
@@ -61,6 +71,24 @@ public class MergeThread extends Thread {
             }
         }
 
+        Contact contact;
+        HashSet<String> names = new HashSet<>((1 + id.length) * 2 + 1);
+        StringBuilder sb = new StringBuilder();
+        for (long i : id) {
+            contact = mapper.getContactById(i, false, false);
+            if (contact != null) {
+                if (names.contains(contact.getDisplayName().toLowerCase())) {
+                    continue;
+                }
+                names.add(contact.getDisplayName().toLowerCase());
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(contact.getDisplayName());
+            }
+        }
+
+        ArrayList<Database.Change> changes = new ArrayList<>();
         ArrayList<ContentProviderOperation> ops = new ArrayList<ContentProviderOperation>();
         for (int i = 0; i < raw.size(); i++) {
             long a = raw.get(i);
@@ -68,11 +96,22 @@ public class MergeThread extends Thread {
             for (int j = i + 1; j < raw.size(); j++) {
                 long b = raw.get(j);
 
-
                 long ida = Math.min(a, b);
                 long idb = Math.max(a, b);
 
                 Log.d("MergeThread", "Merge RawContacts " + ida + "+" + idb);
+
+                int oldValue = mapper.getAggregationMode(ida, idb);
+                if (oldValue == ContactsContract.AggregationExceptions.TYPE_AUTOMATIC) {
+                    oldValue = mapper.getAggregationMode(idb, ida);
+                }
+
+                Database.Change change = new Database.Change();
+                change.rawContactId1 = ida;
+                change.rawContactId2 = idb;
+                change.oldValue = oldValue;
+                change.newValue = ContactsContract.AggregationExceptions.TYPE_KEEP_SEPARATE;
+                changes.add(change);
 
                 ops.add(ContentProviderOperation.newUpdate(
                     ContactsContract.AggregationExceptions.CONTENT_URI)
@@ -109,6 +148,8 @@ public class MergeThread extends Thread {
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+
+        Database.log(context, "Merge " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
     }
 
 }
