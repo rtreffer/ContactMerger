@@ -367,7 +367,7 @@ public class MergeListAdapter extends BaseAdapter implements OnClickListener {
         if ("remove".equals(v.getTag())) {
             Log.d("MergeListAdapter", "remove " + pos);
             final MergeContact contact = model.get(pos);
-            new SeperateThread(provider, contact.root.id, contact.id).start();
+            new SeparateThread(provider, contact.root.id, contact.id).start();
             model.remove(pos);
             ModelSavePool.getInstance().update(activity, timestamp, generation.getAndIncrement(), (ArrayList<MergeContact>)model.clone());
             contact.root.contacts.remove(contact);

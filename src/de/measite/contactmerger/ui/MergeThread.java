@@ -27,6 +27,11 @@ public class MergeThread extends Thread {
 
     @Override
     public void run() {
+        // give the UI some time to show up.
+        try {
+            Thread.sleep(100);
+        } catch (Exception e) { /* nothing to do */ }
+
         // 2 step merge...
         // 1. Get all raw contacts for the given contact and
         // 2. Set those as mutually inclusive
@@ -81,7 +86,8 @@ public class MergeThread extends Thread {
                     ContactsContract.AggregationExceptions.RAW_CONTACT_ID2,
                     idb)
                 .build());
-                if (ops.size() > 100) {
+                if (ops.size() >= 10) {
+                    // small batches or we may stall the UI (ANR)
                     try {
                         contactsProvider.applyBatch(ops);
                     } catch (OperationApplicationException e) {
@@ -90,6 +96,9 @@ public class MergeThread extends Thread {
                         e.printStackTrace();
                     }
                     ops.clear();
+                    try {
+                        Thread.sleep(1);
+                    } catch (Exception e) { /* nothing to do */ }
                 }
             }
         }
