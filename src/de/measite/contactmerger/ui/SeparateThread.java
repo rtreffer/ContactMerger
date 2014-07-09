@@ -194,7 +194,7 @@ public class SeparateThread extends Thread {
             sb.append(", ");
             sb.append(contact.getDisplayName());
         }
-        Database.log(context, "Separate " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
+        Database.log(context, "Separated " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
     }
 
 }

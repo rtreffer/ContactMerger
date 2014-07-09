@@ -147,6 +147,11 @@ public class MergeActivity extends Activity {
             startService(intent);
             return true;
         }
+        if (id == R.id.action_log) {
+            Intent intent = new Intent(getApplicationContext(), LogActivity.class);
+            startActivity(intent);
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 

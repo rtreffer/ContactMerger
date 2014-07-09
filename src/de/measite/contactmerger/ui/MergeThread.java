@@ -149,7 +149,7 @@ public class MergeThread extends Thread {
             e.printStackTrace();
         }
 
-        Database.log(context, "Merge " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
+        Database.log(context, "Merged " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
     }
 
 }

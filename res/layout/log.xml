@@ -15,29 +15,26 @@
         android:visibility="gone"
     />
 
-    <ViewSwitcher
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:id="@+id/no_actions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingTop="20sp"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:lines="1"
-            android:text="No logged actions"
-            />
-
         <ListView
             android:id="@+id/action_list"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dip"
             android:background="#ffffff"
             android:paddingBottom="2dip"
         />
-    </ViewSwitcher>
+
+    <TextView
+        android:id="@+id/no_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20sp"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:lines="1"
+        android:text="No logged actions"
+        android:visibility="gone"
+        />
+
 </LinearLayout>

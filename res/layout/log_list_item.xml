@@ -6,11 +6,11 @@
     android:layout_height="wrap_content"
     android:paddingLeft="10dip"
     android:paddingRight="5dip"
-    android:paddingTop="2dip"
-    android:paddingBottom="2dip"
+    android:background="@android:color/white"
 >
 
     <TextView
+        android:id="@+id/actiontext"
         android:text="Action"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -20,11 +20,15 @@
         android:ellipsize="end"
     />
 
-    <ImageView
+    <ImageButton
+        android:id="@+id/undo"
         android:layout_width="40dip"
         android:layout_height="40dip"
         android:adjustViewBounds="false"
         android:src="@android:drawable/ic_menu_revert"
+        android:padding="2dip"
+        android:layout_margin="2dip"
+        android:background="@drawable/border_left_bottom"
     />
 
 </LinearLayout>
