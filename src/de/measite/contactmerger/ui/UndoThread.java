@@ -70,7 +70,7 @@ public class UndoThread extends Thread {
         Database.setUndone(context, actionid);
 
         try {
-            Thread.sleep(10000);
+            Thread.sleep(100);
         } catch (InterruptedException e) {
             /* ignore, not relevant */
         }
