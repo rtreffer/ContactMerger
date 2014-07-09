@@ -10,7 +10,7 @@
     <string name="analyze_now">Analyze</string>
     <string name="about">About</string>
     <string name="action_log">Action log</string>
-    <string name="title_activity_log">LogActivity</string>
+    <string name="title_activity_log">Action log</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
