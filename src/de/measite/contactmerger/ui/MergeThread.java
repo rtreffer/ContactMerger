@@ -110,7 +110,7 @@ public class MergeThread extends Thread {
                 change.rawContactId1 = ida;
                 change.rawContactId2 = idb;
                 change.oldValue = oldValue;
-                change.newValue = ContactsContract.AggregationExceptions.TYPE_KEEP_SEPARATE;
+                change.newValue = ContactsContract.AggregationExceptions.TYPE_KEEP_TOGETHER;
                 changes.add(change);
 
                 ops.add(ContentProviderOperation.newUpdate(

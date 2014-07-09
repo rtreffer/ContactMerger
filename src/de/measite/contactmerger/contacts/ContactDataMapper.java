@@ -8,6 +8,7 @@ import android.content.ContentProviderClient;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.os.RemoteException;
@@ -97,6 +98,11 @@ public class ContactDataMapper {
         this.provider = provider;
     }
 
+    public ContactDataMapper(Context context) {
+        this.provider =
+                context.getContentResolver().acquireContentProviderClient(
+                        ContactsContract.AUTHORITY_URI);
+    }
     /**
      * Perform a set of operations.
      * @param operations A list of pending operations to be executed.
@@ -721,6 +727,33 @@ public class ContactDataMapper {
         return metadata;
     }
 
+    public void setAggregationMode(long id1, long id2, int value) {
+        try {
+            ContentValues values = new ContentValues();
+            values.put(AggregationExceptions.TYPE, value);
+            values.put(AggregationExceptions.RAW_CONTACT_ID1, id1);
+            values.put(AggregationExceptions.RAW_CONTACT_ID2, id2);
+            provider.update(
+                    AggregationExceptions.CONTENT_URI,
+                    values,
+                    AggregationExceptions.RAW_CONTACT_ID1 + "=" + id1 + " AND " +
+                    AggregationExceptions.RAW_CONTACT_ID2 + "=" + id2,
+                    null
+            );
+            values.put(AggregationExceptions.RAW_CONTACT_ID1, id2);
+            values.put(AggregationExceptions.RAW_CONTACT_ID2, id1);
+            provider.update(
+                    AggregationExceptions.CONTENT_URI,
+                    values,
+                    AggregationExceptions.RAW_CONTACT_ID1 + "=" + id2 + " AND " +
+                    AggregationExceptions.RAW_CONTACT_ID2 + "=" + id1,
+                    null
+            );
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     public int getAggregationMode(long id1, long id2) {
         int result = AggregationExceptions.TYPE_AUTOMATIC;
         try {
@@ -733,7 +766,7 @@ public class ContactDataMapper {
                     null);
             try {
                 if (cursor.moveToFirst()) {
-                    result = cursor.getInt(cursor.getColumnIndex(AggregationExceptions.CONTENT_TYPE));
+                    result = cursor.getInt(cursor.getColumnIndex(AggregationExceptions.TYPE));
                 }
             } finally {
                 cursor.close();

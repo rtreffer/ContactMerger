@@ -56,7 +56,8 @@ public class AnalyzerService extends Service {
 
         startIfNeeded();
 
-        if (intent.hasExtra("forceRunning") && intent.getBooleanExtra("forceRunning", false)) {
+        if (intent != null && intent.hasExtra("forceRunning") &&
+            intent.getBooleanExtra("forceRunning", false)) {
             startThread();
         }
 

@@ -3,6 +3,7 @@ package de.measite.contactmerger.ui;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,20 +13,25 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import de.measite.contactmerger.R;
+import de.measite.contactmerger.contacts.ContactDataMapper;
 import de.measite.contactmerger.log.Database;
 
 /**
  * Adapter for the action log list.
  */
-public class LogListAdapter extends CursorAdapter {
+public class LogListAdapter extends CursorAdapter implements View.OnClickListener {
 
-    protected LayoutInflater layoutInflater;
+    protected final Context context;
+    protected final LayoutInflater layoutInflater;
     protected final static int mergeBGa = Color.rgb(255, 255, 246);
     protected final static int mergeBGb = Color.rgb(248, 248, 255);
+    protected final ContactDataMapper mapper;
 
-    public LogListAdapter(Context c) {
-        super(c, Database.query(c), false);
-        layoutInflater = LayoutInflater.from(c);
+    public LogListAdapter(Context context) {
+        super(context, Database.query(context), true);
+        layoutInflater = LayoutInflater.from(context);
+        this.context = context;
+        this.mapper = new ContactDataMapper(this.context);
     }
 
     @Override
@@ -43,9 +49,33 @@ public class LogListAdapter extends CursorAdapter {
         TextView text = (TextView) view.findViewById(R.id.actiontext);
 
         undoIcon.setEnabled(undo == false);
+
+        view.setTag(cursor.getInt(cursor.getColumnIndex("_id")));
+
+        if (undo) {
+            text.setPaintFlags(text.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            text.setPaintFlags(text.getPaintFlags() & ~Paint.STRIKE_THRU_TEXT_FLAG);
+        }
+
         text.setText(description);
 
         view.setBackgroundColor((cursor.getInt(cursor.getColumnIndex("_id")) % 2 == 0) ? mergeBGa : mergeBGb);
+
+        undoIcon.setClickable(undo == false);
+        undoIcon.setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        View t = v;
+        while (t.getParent() != null &&
+                t.getId() != R.id.log_item_root &&
+                t.getParent() instanceof View) {
+            t = (View)t.getParent();
+        }
+        int id = (Integer)t.getTag();
+        new UndoThread(context, mapper, id).start();
     }
 
 }

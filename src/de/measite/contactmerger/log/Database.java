@@ -9,10 +9,13 @@ import android.net.Uri;
 import android.provider.ContactsContract;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 /**
  * Action log database, will allow undo operations.
  */
 public class Database {
+
     private static class MyDatabaseHelper extends SQLiteOpenHelper {
         public MyDatabaseHelper(Context context) {
             super(context, "log", null, 1);
@@ -53,6 +56,10 @@ public class Database {
             "_id", "timestamp", "description", "actiontype", "undone"
     };
 
+    public final static String[] actionProjection = new String[]{
+            "_id", "actionLogId", "rawContact1", "rawContact2", "oldValue", "newValue"
+    };
+
     public final static int MERGE = 1;
     public final static int SEPARATE = 1;
 
@@ -65,6 +72,19 @@ public class Database {
         public long rawContactId2;
         public int oldValue;
         public int newValue;
+    }
+
+    public static synchronized void setUndone(Context context, long actionid) {
+        if (db == null) {
+            db = new MyDatabaseHelper(context).getWritableDatabase();
+        }
+
+        ContentValues values = new ContentValues();
+        values.put("undone", 1);
+
+        db.update("actionlog", values, "_id=" + actionid, null);
+
+        context.getContentResolver().notifyChange(URI, null);
     }
 
     public static synchronized long log(Context context, String description, Change changes[]) {
@@ -117,6 +137,30 @@ public class Database {
         Cursor cursor = db.query("actionlog", actionlogProjection, null, null, null, null, "timestamp DESC");
         cursor.setNotificationUri(context.getContentResolver(), URI);
         return cursor;
+    }
+
+    public static synchronized Change[] getChanges(Context context, long actionid) {
+        if (db == null) {
+            db = new MyDatabaseHelper(context).getWritableDatabase();
+        }
+
+        ArrayList<Change> changes = new ArrayList<>();
+        Cursor cursor = db.query("actionchanges", actionProjection, "actionLogId=" + actionid, null, null, null, null);
+        int rawContact1Pos = cursor.getColumnIndex("rawContact1");
+        int rawContact2Pos = cursor.getColumnIndex("rawContact2");
+        int oldValuePos = cursor.getColumnIndex("oldValue");
+        int newValuePos = cursor.getColumnIndex("newValue");
+        if (cursor.moveToFirst()) while (!cursor.isAfterLast()) {
+            Change change = new Change();
+            change.rawContactId1 = cursor.getInt(rawContact1Pos);
+            change.rawContactId2 = cursor.getInt(rawContact2Pos);
+            change.oldValue = cursor.getInt(oldValuePos);
+            change.newValue = cursor.getInt(newValuePos);
+            changes.add(change);
+            cursor.moveToNext();
+        }
+
+        return changes.toArray(new Change[changes.size()]);
     }
 
 }
