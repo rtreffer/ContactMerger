@@ -194,7 +194,11 @@ public class ImMetadata extends Metadata {
      * @return The current instant messaging contact type.
      */
     public Type getType() {
-        return Type.byTypeId(Integer.parseInt(getData(1)));
+        try {
+            return Type.byTypeId(Integer.parseInt(getData(1)));
+        } catch (Exception e) {
+            return Type.OTHER;
+        }
     }
 
     /**
@@ -226,7 +230,11 @@ public class ImMetadata extends Metadata {
      * @return The current protocol type.
      */
     public Protocol getProtocol() {
-        return Protocol.byProtocolId(Integer.parseInt(getData(4)));
+        try {
+            return Protocol.byProtocolId(Integer.parseInt(getData(4)));
+        } catch (Exception e) {
+            return Protocol.CUSTOM;
+        }
     }
 
     /**
