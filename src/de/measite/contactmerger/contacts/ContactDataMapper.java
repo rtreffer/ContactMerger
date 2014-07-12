@@ -291,7 +291,7 @@ public class ContactDataMapper {
             new String[]{RawContacts.CONTACT_ID};
 
     public int getContactByRawContactID(long id) {
-        int result = 0;
+        int result = -1;
         try {
             Cursor cursor = provider.query(
                     RawContacts.CONTENT_URI,

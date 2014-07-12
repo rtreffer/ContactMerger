@@ -1,14 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/log_item_root"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="10dip"
-    android:paddingRight="5dip"
+    android:paddingTop="1dip"
+    android:paddingBottom="1dip"
+    android:paddingLeft="4dip"
+    android:paddingRight="2dip"
     android:background="@android:color/white"
 >
+
+    <ImageView
+        android:id="@+id/contact_picture"
+        android:layout_width="48dip"
+        android:layout_height="48dip"
+        android:layout_marginRight="6dip"
+        android:background="@android:color/darker_gray"
+        tools:ignore="ContentDescription"
+    />
 
     <TextView
         android:id="@+id/actiontext"
@@ -16,9 +29,10 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:textSize="20sp"
+        android:textSize="16sp"
         android:gravity="center_vertical|left"
         android:ellipsize="end"
+        android:lines="2"
     />
 
     <ImageButton

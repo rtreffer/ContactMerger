@@ -10,6 +10,7 @@ import android.provider.ContactsContract;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.TreeSet;
 
 /**
  * Action log database, will allow undo operations.
@@ -137,6 +138,30 @@ public class Database {
         Cursor cursor = db.query("actionlog", actionlogProjection, null, null, null, null, "timestamp DESC");
         cursor.setNotificationUri(context.getContentResolver(), URI);
         return cursor;
+    }
+
+    public static synchronized long[] getRawContactIds(Context context, long actionid) {
+        if (db == null) {
+            db = new MyDatabaseHelper(context).getWritableDatabase();
+        }
+
+        Cursor cursor = db.query("actionchanges", actionProjection, "actionLogId=" + actionid, null, null, null, null);
+        int rawContact1Pos = cursor.getColumnIndex("rawContact1");
+        int rawContact2Pos = cursor.getColumnIndex("rawContact2");
+        TreeSet<Long> ids = new TreeSet<Long>();
+
+        if (cursor.moveToFirst()) while (!cursor.isAfterLast()) {
+            ids.add(cursor.getLong(rawContact1Pos));
+            ids.add(cursor.getLong(rawContact2Pos));
+            cursor.moveToNext();
+        }
+
+        long id[] = new long[ids.size()];
+        int pos = 0;
+        for (Long l: ids) {
+            id[pos++] = l.longValue();
+        }
+        return id;
     }
 
     public static synchronized Change[] getChanges(Context context, long actionid) {
