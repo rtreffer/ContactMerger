@@ -182,17 +182,23 @@ public class SeparateThread extends Thread {
         }
         Contact contact = mapper.getContactById(root, false, false);
         HashSet<String> names = new HashSet<>((1 + id.length) * 2 + 1);
-        names.add(contact.getDisplayName().toLowerCase());
-        StringBuilder sb = new StringBuilder(contact.getDisplayName());
+        StringBuilder sb = new StringBuilder();
+        if (contact != null && contact.getDisplayName() != null) {
+            names.add(contact.getDisplayName().toLowerCase());
+            sb.append(contact.getDisplayName());
+        }
         for (long i : id) {
             contact = mapper.getContactById(i, false, false);
-            if (contact == null) continue;
+            if (contact == null || contact.getDisplayName() == null) continue;
             if (names.contains(contact.getDisplayName().toLowerCase())) {
                 continue;
             }
             names.add(contact.getDisplayName().toLowerCase());
-            sb.append(", ");
+            if (sb.length() > 0) sb.append(", ");
             sb.append(contact.getDisplayName());
+        }
+        if (sb.length() == 0) {
+            sb.append("2 contacts");
         }
         Database.log(context, "Separated " + sb.toString(), changes.toArray(new Database.Change[changes.size()]));
     }
