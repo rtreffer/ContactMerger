@@ -148,11 +148,18 @@ public class GraphConverter {
             }
             if (root == null) {
                 Contact ref = null;
+		if (right == null || right.getDisplayName() == null) {
+		    ref = left;
+		} else
+                if (left == null || left.getDisplayName() == null) {
+		    ref = right;
+		} else
                 if (right.getDisplayName().length() > left.getDisplayName().length()) {
                     ref = right;
                 } else {
                     ref = left;
                 }
+		if (ref == null) continue;
                 root = new RootContact();
                 root.sortName = ref.getSortKeyPrimary();
                 root.id = ref.getId();
