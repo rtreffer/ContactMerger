@@ -6,15 +6,46 @@
 >
 
     <!-- Top bar for progress -->
-    <ProgressBar
-        android:id="@+id/analyze_progress"
-        style="@android:style/Widget.ProgressBar.Horizontal"
-        android:layout_height="3dip"
-        android:layout_margin="0dip"
-        android:padding="0dip"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/progress_bar_container"
         android:visibility="gone"
-    />
+    >
+
+        <ProgressBar
+            android:id="@+id/analyze_progress"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_height="8dip"
+            android:layout_margin="0dip"
+            android:layout_gravity="fill_horizontal|center_vertical"
+            android:padding="0dip"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+        />
+
+        <TextView
+            android:id="@+id/stop_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="26sp"
+            android:minWidth="26sp"
+            android:text="@string/fa_times"
+            android:gravity="center"
+            android:visibility="visible"
+            android:textSize="26sp"
+            android:tag="remove"
+            android:textColor="#ff000000"
+            android:paddingTop="2sp"
+            android:paddingLeft="3sp"
+            android:paddingBottom="2sp"
+            android:paddingRight="4sp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="0"
+        />
+
+    </LinearLayout>
 
     <!-- layout for dummy text + list -->
     <ViewSwitcher
@@ -40,6 +71,16 @@
             android:layout_weight="0.2"
             android:text="Analyzing your contacts.\nThis can take a few minutes.\n"
             />
+
+        <Button
+            android:id="@+id/start_scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal|top"
+            android:text="Start analysis"
+            android:visibility="gone"
+        />
+
         <ImageView
             android:layout_margin="20dip"
             android:layout_width="wrap_content"

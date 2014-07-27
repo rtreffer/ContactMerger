@@ -60,11 +60,37 @@ public class AnalyzerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        startIfNeeded();
+        final NotificationManager notificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        if (intent != null && intent.hasExtra("forceRunning") &&
-            intent.getBooleanExtra("forceRunning", false)) {
+        if (intent != null && intent.getBooleanExtra("stop", false)) {
+            new Thread() {
+                @Override
+                public void run() {
+                    // uh-uh, user-requested stop
+                    while (analyzer != null && analyzer.isAlive())
+
+                    {
+                        try {
+                            analyzer.doStop();
+                            analyzer.interrupt();
+                        } catch (Exception e) {
+                        }
+                        try {
+                            Thread.sleep(10);
+                        } catch (Exception e) {
+                        }
+                    }
+                    notificationManager.cancel(1);
+                }
+            }.start();
+            return START_STICKY;
+        }
+
+        if (intent != null && intent.getBooleanExtra("forceRunning", false)) {
             startThread();
+        } else {
+            startIfNeeded();
         }
 
         return START_STICKY;

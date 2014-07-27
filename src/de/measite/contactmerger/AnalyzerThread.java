@@ -68,12 +68,14 @@ public class AnalyzerThread extends Thread {
     protected static float PHASE2 = 0.9f;
 
     protected final static String LOGTAG = "contactmerger.AnalyzerThread";
+    protected final File path;
 
     protected Context context;
     protected PerFieldAnalyzerWrapper analyzer;
     protected Directory dir;
     protected ContactDataMapper mapper;
     protected ArrayList<ProgressListener> listeners = new ArrayList<ProgressListener>(2);
+    private boolean stop = false;
 
     public AnalyzerThread(Context context) {
         super();
@@ -84,10 +86,20 @@ public class AnalyzerThread extends Thread {
         analyzer = new PerFieldAnalyzerWrapper(
                 new StandardAnalyzer(Version.LUCENE_47), fieldAnalyzers);
         dir = null;
-        File path = context.getDatabasePath("contactsindex");
-        if (!path.exists()) path.mkdirs();
+        path = context.getDatabasePath("contactsindex");
+        while (!path.exists()) {
+            path.mkdirs();
+            if (!path.exists()) {
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
         try {
             dir = new SimpleFSDirectory(path);
+            dir.clearLock(IndexWriter.WRITE_LOCK_NAME);
             ContentProviderClient provider =
                     context.getContentResolver().acquireContentProviderClient(
                         ContactsContract.AUTHORITY_URI);
@@ -127,9 +139,13 @@ public class AnalyzerThread extends Thread {
 
             phaseIndex();
 
+            if (stop) return;
+
             reportProgress(PHASE1);
 
             UndirectedGraph<Long, Double> graph = phaseAnalyze();
+
+            if (stop) return;
 
             reportProgress(0.99f);
 
@@ -137,6 +153,8 @@ public class AnalyzerThread extends Thread {
             if (!path.exists()) path.mkdirs();
 
             GraphIO.store(graph, new File(path, "graph.kryo.gz"));
+
+            if (stop) return;
 
             reportProgress(0.991f);
 
@@ -146,10 +164,13 @@ public class AnalyzerThread extends Thread {
                         ContactsContract.AUTHORITY_URI);
             ArrayList<MergeContact> model = GraphConverter.convert(graph, provider);
 
+            if (stop) return;
+
             reportProgress(0.996f);
 
             try {
                 ModelIO.store(model, modelFile);
+                if (stop) return;
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -157,15 +178,22 @@ public class AnalyzerThread extends Thread {
             }
 
         } catch (IOException e) {
+            stop = true;
+            e.printStackTrace();
+        } catch (Exception e) {
+            // we should never fail
+            stop = true;
             e.printStackTrace();
         } finally {
             if (dir != null) {
                 try {
                     dir.close();
+                    dir = null;
                 } catch (IOException e) {
+                } catch (Exception e) {
                 }
             }
-            reportProgress(1f);
+            if (!stop) reportProgress(1f);
         }
     }
 
@@ -191,6 +219,9 @@ public class AnalyzerThread extends Thread {
         for (int i = 0; i < reader.maxDoc(); i++) {
             // go through all accounts, again, and check what accounts
             // should be merged
+
+            if (stop) return null;
+
             Document doc = reader.document(i);
             if (doc == null) continue;
 
@@ -308,7 +339,11 @@ public class AnalyzerThread extends Thread {
 
             done++;
             reportProgress(PHASE1 + ((PHASE2 - 0.001f) * Math.min(done, ids.length)) / ids.length);
-            try { Thread.yield(); } catch (Exception e) { /* not critical */ }
+            try {
+                Thread.yield();
+            } catch (Exception e) {
+                /* not critical */
+            }
         }
 
         return graph;
@@ -320,13 +355,17 @@ public class AnalyzerThread extends Thread {
                     Version.LUCENE_47,
                     analyzer));
 
-            writer.deleteAll();
+        writer.deleteAll();
 
+        try {
             int[] ids = mapper.getContactIDs();
             Log.d(LOGTAG, "Got " + ids.length + " contacts to index");
 
             int done = 0;
             for (int i : ids) {
+
+                if (stop) return;
+
                 Contact contact = mapper.getContactById(i, true, true);
                 if (contact == null) continue; // modified as we read it :-S
                 Document doc = new Document();
@@ -336,12 +375,12 @@ public class AnalyzerThread extends Thread {
                 String all = "";
                 if (!empty(contact.getDisplayName())) {
                     doc.add(new TextField(
-                        "display_name", contact.getDisplayName(), Store.YES));
+                            "display_name", contact.getDisplayName(), Store.YES));
                     all = all + " " + contact.getDisplayName();
                 }
                 if (!empty(contact.getDisplayNameAlternative())) {
                     doc.add(new TextField(
-                        "display_name_alternative", contact.getDisplayNameAlternative(), Store.YES));
+                            "display_name_alternative", contact.getDisplayNameAlternative(), Store.YES));
                     all = all + " " + contact.getDisplayNameAlternative();
                 }
                 if (!empty(contact.getDisplayNamePrimary())) {
@@ -371,25 +410,25 @@ public class AnalyzerThread extends Thread {
                 for (RawContact raw : raws) {
                     if (!empty(raw.getAccountType()) && !empty(raw.getAccountName())) {
                         doc.add(new TextField(
-                            "account_type_" + raw.getAccountType(),
-                            raw.getAccountName(), Store.YES));
+                                "account_type_" + raw.getAccountType(),
+                                raw.getAccountName(), Store.YES));
                         doc.add(new TextField(
-                            "account_type", raw.getAccountType(), Store.YES));
+                                "account_type", raw.getAccountType(), Store.YES));
                         doc.add(new TextField(
                                 "account_name", raw.getAccountName(), Store.YES));
                     }
-                    for (Metadata data: raw.getMetadata().values()) {
+                    for (Metadata data : raw.getMetadata().values()) {
                         if (data.getMimetype().equals(ImMetadata.MIMETYPE)) {
                             if (!empty(data.getData(0))) {
                                 doc.add(new TextField(
-                                    "im", data.getData(0), Store.YES));
+                                        "im", data.getData(0), Store.YES));
                                 doc.add(new TextField(
                                         "key_contact", data.getData(0), Store.YES));
                                 all = all + " " + data.getData(2);
                             }
                             if (!empty(data.getData(2))) {
                                 doc.add(new TextField(
-                                    "im", data.getData(2), Store.YES));
+                                        "im", data.getData(2), Store.YES));
                                 doc.add(new TextField(
                                         "key_contact", data.getData(2), Store.YES));
                                 all = all + " " + data.getData(2);
@@ -399,47 +438,47 @@ public class AnalyzerThread extends Thread {
                         if (data.getMimetype().equals(StructuredName.CONTENT_ITEM_TYPE)) {
                             if (!empty(data.getData(0))) {
                                 doc.add(new TextField(
-                                    "display_name", data.getData(0), Store.YES));
+                                        "display_name", data.getData(0), Store.YES));
                                 all = all + " " + data.getData(0);
                             }
                             if (!empty(data.getData(1))) {
                                 doc.add(new TextField(
-                                    "given_name", data.getData(1), Store.YES));
+                                        "given_name", data.getData(1), Store.YES));
                                 all = all + " " + data.getData(1);
                             }
                             if (!empty(data.getData(2))) {
                                 doc.add(new TextField(
-                                    "family_name", data.getData(2), Store.YES));
+                                        "family_name", data.getData(2), Store.YES));
                                 all = all + " " + data.getData(2);
                             }
                             if (!empty(data.getData(4))) {
                                 doc.add(new TextField(
-                                    "middle_name", data.getData(4), Store.YES));
+                                        "middle_name", data.getData(4), Store.YES));
                                 all = all + " " + data.getData(4);
                             }
                             if (!empty(data.getData(6))) {
                                 doc.add(new TextField(
-                                    "phonetic_given_name", data.getData(6), Store.YES));
+                                        "phonetic_given_name", data.getData(6), Store.YES));
                                 all = all + " " + data.getData(6);
                             }
                             if (!empty(data.getData(8))) {
                                 doc.add(new TextField(
-                                    "phonetic_family_name", data.getData(8), Store.YES));
+                                        "phonetic_family_name", data.getData(8), Store.YES));
                                 all = all + " " + data.getData(8);
                             }
                             if (!empty(data.getData(7))) {
                                 doc.add(new TextField(
-                                    "phonetic_middle_name", data.getData(7), Store.YES));
+                                        "phonetic_middle_name", data.getData(7), Store.YES));
                                 all = all + " " + data.getData(7);
                             }
                             if (!empty(data.getData(3))) {
                                 doc.add(new TextField(
-                                    "name_prefix", data.getData(3), Store.YES));
+                                        "name_prefix", data.getData(3), Store.YES));
                                 all = all + " " + data.getData(3);
                             }
                             if (!empty(data.getData(5))) {
                                 doc.add(new TextField(
-                                    "name_suffix", data.getData(5), Store.YES));
+                                        "name_suffix", data.getData(5), Store.YES));
                                 all = all + " " + data.getData(5);
                             }
                             continue;
@@ -447,7 +486,7 @@ public class AnalyzerThread extends Thread {
                         if (data.getMimetype().equals(StructuredPostal.CONTENT_ITEM_TYPE)) {
                             if (!empty(data.getData(0))) {
                                 doc.add(new TextField(
-                                    "postal", data.getData(0), Store.YES));
+                                        "postal", data.getData(0), Store.YES));
                                 all = all + " " + data.getData(0);
                             }
                             continue;
@@ -456,7 +495,7 @@ public class AnalyzerThread extends Thread {
                             if (!empty(data.getData(0))) {
                                 String str = data.getData(0);
                                 doc.add(new TextField(
-                                    "phonenumber", str, Store.YES));
+                                        "phonenumber", str, Store.YES));
                                 doc.add(new TextField(
                                         "key_contact", str, Store.YES));
                                 all = all + " " + data.getData(0);
@@ -466,7 +505,7 @@ public class AnalyzerThread extends Thread {
                         if (data.getMimetype().equals(Email.CONTENT_ITEM_TYPE)) {
                             if (!empty(data.getData(0))) {
                                 doc.add(new TextField(
-                                    "email", data.getData(0), Store.YES));
+                                        "email", data.getData(0), Store.YES));
                                 doc.add(new TextField(
                                         "key_contact", data.getData(0), Store.YES));
                                 all = all + " " + data.getData(0);
@@ -476,7 +515,7 @@ public class AnalyzerThread extends Thread {
                         if (data.getMimetype().equals(Nickname.CONTENT_ITEM_TYPE)) {
                             if (!empty(data.getData(0))) {
                                 doc.add(new TextField(
-                                    "nickname", data.getData(0), Store.YES));
+                                        "nickname", data.getData(0), Store.YES));
                                 all = all + " " + data.getData(0);
                             }
                             continue;
@@ -484,7 +523,7 @@ public class AnalyzerThread extends Thread {
                         if (data.getMimetype().equals(Website.CONTENT_ITEM_TYPE)) {
                             if (!empty(data.getData(0))) {
                                 doc.add(new TextField(
-                                    "website", data.getData(0), Store.YES));
+                                        "website", data.getData(0), Store.YES));
                                 doc.add(new TextField(
                                         "key_contact", data.getData(0), Store.YES));
                                 all = all + " " + data.getData(0);
@@ -501,17 +540,42 @@ public class AnalyzerThread extends Thread {
                         "all", all.trim(), Store.YES));
 
                 writer.addDocument(doc, analyzer);
-                Log.d(LOGTAG, "Got contact " + i  + " " + done + "/" + ids.length);
+                Log.d(LOGTAG, "Got contact " + i + " " + done + "/" + ids.length);
                 reportProgress(((PHASE1 - 0.001f) * (Math.min(done, ids.length)) / ids.length));
-                try { Thread.yield(); } catch (Exception e) { /* not critical */ }
+                try {
+                    Thread.yield();
+                } catch (Exception e) { /* not critical */ }
             }
 
             writer.forceMerge(1);
             writer.commit();
-            writer.close();
+        } finally {
+            try {
+                writer.close(true);
+            } catch (Exception e) {}
+        }
     }
 
     private final static boolean empty(String s) {
         return s == null || s.trim().isEmpty();
+    }
+
+    public void doStop() {
+        this.stop = true;
+        try {
+            dir.clearLock(IndexWriter.WRITE_LOCK_NAME);
+            dir.close();
+            dir = null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        File lock = new File(path, "write.lock");
+        if (lock.exists()) {
+            try {
+                lock.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

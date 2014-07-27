@@ -12,24 +12,28 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 import de.measite.contactmerger.ui.MergeListAdapter;
 
-public class MergeActivity extends Activity {
+public class MergeActivity extends Activity implements View.OnClickListener {
 
     protected static final String TAG = "ContactMerger/MergeActivity";
 
     protected ProgressBar progressBar;
     protected TextView loadText;
+    protected View progressContainer;
+    protected Button startScan;
 
     protected BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -38,14 +42,14 @@ public class MergeActivity extends Activity {
             if ("start".equals(event)) {
                 progressBar.setProgress(0);
                 progressBar.setMax(1000);
-                progressBar.setVisibility(View.VISIBLE);
+                progressContainer.setVisibility(View.VISIBLE);
                 return;
             }
             if ("progress".equals(event)) {
                 float f = intent.getFloatExtra("progress", 0f);
                 progressBar.setProgress((int)(1000 * f));
                 progressBar.setMax(1000);
-                progressBar.setVisibility(View.VISIBLE);
+                progressContainer.setVisibility(View.VISIBLE);
                 progressBar.postInvalidate();
                 loadText.setText("Analyzing your contacts.\nThis can take a few minutes.\n" +
                         ((int)(f * 100)) + "%"
@@ -55,7 +59,7 @@ public class MergeActivity extends Activity {
             if ("finish".equals(event)) {
                 progressBar.setProgress(1000);
                 progressBar.setMax(1000);
-                progressBar.setVisibility(View.GONE);
+                progressContainer.setVisibility(View.GONE);
                 updateList();
                 return;
             }
@@ -82,10 +86,20 @@ public class MergeActivity extends Activity {
     }
 
     public void updateList() {
+        progressContainer = findViewById(R.id.progress_bar_container);
         progressBar = (ProgressBar)findViewById(R.id.analyze_progress);
-        progressBar.setVisibility(View.GONE);
+        progressContainer.setVisibility(View.GONE);
 
         loadText = (TextView) findViewById(R.id.load_text);
+
+        TextView stopScan = (TextView) findViewById(R.id.stop_scan);
+        Typeface font = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
+        stopScan.setTypeface(font);
+        stopScan.setClickable(true);
+        stopScan.setOnClickListener(this);
+
+        startScan = (Button) findViewById(R.id.start_scan);
+        startScan.setOnClickListener(this);
 
         ViewSwitcher switcher = (ViewSwitcher)findViewById(R.id.switcher);
         ViewSwitcher switcher_list = (ViewSwitcher)findViewById(R.id.switcher_list);
@@ -113,6 +127,9 @@ public class MergeActivity extends Activity {
             if (switcher.getCurrentView().getId() == R.id.contact_merge_list) {
                 switcher.showPrevious();
             }
+            Intent intent = new Intent(getApplicationContext(), AnalyzerService.class);
+            intent.putExtra("forceRunning", true);
+            startService(intent);
         }
         switcher.postInvalidate();
     }
@@ -206,6 +223,25 @@ public class MergeActivity extends Activity {
     protected void onStop() {
         LocalBroadcastManager.getInstance(getApplicationContext()).unregisterReceiver(receiver);
         super.onStop();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v.getId() == R.id.stop_scan) {
+            Intent intent = new Intent(getApplicationContext(), AnalyzerService.class);
+            intent.putExtra("stop", true);
+            startService(intent);
+            progressContainer.setVisibility(View.GONE);
+            loadText.setVisibility(View.GONE);
+            startScan.setVisibility(View.VISIBLE);
+        }
+        if (v.getId() == R.id.start_scan) {
+            Intent intent = new Intent(getApplicationContext(), AnalyzerService.class);
+            intent.putExtra("forceRunning", true);
+            startService(intent);
+            loadText.setVisibility(View.VISIBLE);
+            startScan.setVisibility(View.GONE);
+        }
     }
 
 }
