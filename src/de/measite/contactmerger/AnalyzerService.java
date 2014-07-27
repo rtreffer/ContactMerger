@@ -18,8 +18,14 @@ import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import de.measite.contactmerger.graph.GraphIO;
+import de.measite.contactmerger.graph.UndirectedGraph;
+import de.measite.contactmerger.ui.GraphConverter;
+import de.measite.contactmerger.ui.model.MergeContact;
 import de.measite.contactmerger.ui.model.ModelIO;
 
 public class AnalyzerService extends Service {
@@ -108,10 +114,21 @@ public class AnalyzerService extends Service {
         boolean modelFileExists =
                 modelFile.exists() && modelFile.lastModified() > graphFile.lastModified();
 
-        // 1. simply no data -> go!
-        if (!graphFileExists || !modelFileExists) {
-            Log.d(TAG, "Starting thread due to missing data");
-            startThread();
+        // 1. no data
+        if (!modelFileExists) {
+            if (!modelFileExists) {
+                Log.d(TAG, "Starting thread due to missing data");
+                startThread();
+                return;
+            }
+            try {
+                ArrayList<MergeContact> model = GraphConverter.convert(
+                        (UndirectedGraph) GraphIO.load(graphFile),
+                        getBaseContext().getContentResolver().acquireContentProviderClient(ContactsContract.AUTHORITY_URI));
+                ModelIO.store(model, modelFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             return;
         }
 
@@ -121,7 +138,7 @@ public class AnalyzerService extends Service {
 
         // 2. Plugged in, battery good -> go (bit not more often than once per 24 hours)
         if (!onBattery && level > 0.95) {
-            if (graphFile.lastModified() + 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+            if (graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to good battery and old data");
                 startThread();
                 return;
@@ -129,7 +146,7 @@ public class AnalyzerService extends Service {
         }
 
         if (!onBattery && level > 0.75) {
-            if (graphFile.lastModified() + 48 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+            if (graphFile.lastModified() + 30 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to ok battery and old data");
                 startThread();
                 return;
@@ -137,14 +154,14 @@ public class AnalyzerService extends Service {
         }
 
         // 3. Really old data + plugged in?
-        if (!onBattery && graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+        if (!onBattery && graphFile.lastModified() + 60 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to old data (on battery)");
             startThread();
             return;
         }
 
         // 4. we should only run on battery if everything else fails
-        if (graphFile.lastModified() + 21 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+        if (graphFile.lastModified() + 90 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to very old data");
             startThread();
             return;
