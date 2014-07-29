@@ -151,9 +151,14 @@ public class AnalyzerService extends Service {
         boolean modelFileExists =
                 modelFile.exists() && modelFile.lastModified() > graphFile.lastModified();
 
+        long lastScan = 0l;
+        if (scanPreferences != null) {
+            lastScan = scanPreferences.getLong("start_scan", lastScan);
+        }
+
         // 1. no data
-        if (!modelFileExists) {
-            if (!modelFileExists) {
+        if (!modelFileExists && lastScan == 0l) {
+            if (!graphFileExists) {
                 Log.d(TAG, "Starting thread due to missing data");
                 startThread();
                 return;
@@ -178,14 +183,11 @@ public class AnalyzerService extends Service {
             f += rnd.nextDouble();
         }
 
-        long lastScan = graphFile.lastModified();
-        if (scanPreferences != null) {
-            lastScan = Math.max(lastScan, scanPreferences.getLong("start_scan", lastScan));
-        }
+        lastScan = Math.max(lastScan, graphFile.lastModified());
 
         // 2. Plugged in, battery good -> go (bit not more often than once per 24 hours)
         if (!onBattery && level > 0.95) {
-            if (lastScan + 7 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+            if (lastScan + 7l * 24l * 60l * 60l * 1000l * f < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to good battery and old data");
                 startThread();
                 return;
@@ -193,7 +195,7 @@ public class AnalyzerService extends Service {
         }
 
         if (!onBattery && level > 0.75) {
-            if (lastScan + 30 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+            if (lastScan + 30l * 24l * 60l * 60l * 1000l * f < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to ok battery and old data");
                 startThread();
                 return;
@@ -201,15 +203,15 @@ public class AnalyzerService extends Service {
         }
 
         // 3. Really old data + plugged in?
-        if (!onBattery && lastScan + 60 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+        if (!onBattery && lastScan + 60l * 24l * 60l * 60l * 1000l * f < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to old data (on battery)");
             startThread();
             return;
         }
 
         // 4. we should only run on battery if everything else fails
-        if (lastScan + 90 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
-            Log.d(TAG, "Starting thread due to very old data");
+        if (lastScan + 90l * 24l * 60l * 60l * 1000l * f < System.currentTimeMillis()) {
+            Log.d(TAG, "Starting thread due to very old data (" + lastScan + ")");
             startThread();
             return;
         }
