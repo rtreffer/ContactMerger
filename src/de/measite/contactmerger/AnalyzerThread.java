@@ -214,6 +214,8 @@ public class AnalyzerThread extends Thread {
         UndirectedGraph<Long, Double> graph =
                 new UndirectedGraph<Long, Double>();
 
+        BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
+
         int done = 0;
         HashMap<String, Integer> words = new HashMap<String, Integer>();
         for (int i = 0; i < reader.maxDoc(); i++) {
@@ -230,104 +232,64 @@ public class AnalyzerThread extends Thread {
 
             // try to find dups based on the "all" field
 
-            BooleanQuery root = new BooleanQuery();
-            TokenStream stream = doc.getField("all").tokenStream(analyzer);
-            CharTermAttribute term = stream.getAttribute(CharTermAttribute.class);
-            stream.reset();
-            words.clear();
-            int wordCount = 0;
-            while (stream.incrementToken()) {
-                wordCount++;
-                String sterm = term.toString();
-                Integer count = words.get(sterm);
-                if (count == null) {
-                    words.put(sterm, 1);
-                } else {
-                    words.put(sterm, count + 1);
+            try {
+                BooleanQuery root = new BooleanQuery();
+                TokenStream stream = doc.getField("all").tokenStream(analyzer);
+                CharTermAttribute term = stream.getAttribute(CharTermAttribute.class);
+                stream.reset();
+                words.clear();
+                int wordCount = 0;
+                while (stream.incrementToken()) {
+                    wordCount++;
+                    String sterm = term.toString();
+                    Integer count = words.get(sterm);
+                    if (count == null) {
+                        words.put(sterm, 1);
+                    } else {
+                        words.put(sterm, count + 1);
+                    }
                 }
-            }
-            stream.close();
+                stream.close();
 
-            for (Entry<String, Integer> entry: words.entrySet()) {
-                double frequency = ((double)entry.getValue()) / wordCount;
-                String t = entry.getKey();
-                Query q = null;
-                if (t.length() <= 3) {
-                    q = new TermQuery(new Term("all", t));
-                } else if (t.length() <= 6) {
-                    q = new FuzzyQuery(new Term("all", t), 1, 2);
-                } else {
-                    q = new FuzzyQuery(new Term("all", t), 2, 2);
+                for (Entry<String, Integer> entry : words.entrySet()) {
+                    double frequency = ((double) entry.getValue()) / wordCount;
+                    String t = entry.getKey();
+                    Query q = null;
+                    if (t.length() <= 3) {
+                        q = new TermQuery(new Term("all", t));
+                    } else if (t.length() <= 6) {
+                        q = new FuzzyQuery(new Term("all", t), 1, 2);
+                    } else {
+                        q = new FuzzyQuery(new Term("all", t), 2, 2);
+                    }
+                    q.setBoost((float) frequency);
+                    root.add(new BooleanClause(q, Occur.SHOULD));
                 }
-                q.setBoost((float)frequency);
-                root.add(new BooleanClause(q, Occur.SHOULD));
-            }
-            root.setMinimumNumberShouldMatch(Math.min(
-                words.size(),
-                1 + words.size() * 2 / 3
-            ));
-            float boost = (float)(
-                0.1 + 0.9 * (words.size() - 1) / words.size()
-            );
-            root.setBoost(boost);
-            BytesRef bytes = new BytesRef(NumericUtils.BUF_SIZE_LONG);
-            NumericUtils.longToPrefixCoded(id, 0, bytes);
-            root.add(new BooleanClause(new TermQuery(
-                    new Term("id", bytes)),
-                    Occur.MUST_NOT));
-
-            TopDocs docs = search.search(root, 20);
-            if (docs.scoreDocs.length > 0) {
-                Log.d(LOGTAG, "Reference " + Arrays.toString(doc.getValues("display_name")));
-            }
-            for (ScoreDoc otherDoc: docs.scoreDocs) {
-                Document other = reader.document(otherDoc.doc);
-                long otherId = Long.parseLong(other.getValues("id")[0]);
-                String log =
-                    "Hit: doc " + otherDoc.doc + " / contact " +
-                     otherId + " / score "+ otherDoc.score +
-                    " " + Arrays.toString(other.getValues("display_name"));
-                Log.d(LOGTAG, log);
-                Double d = graph.getEdge(id, otherId);
-                if (d == null) {
-                    d = 0d;
-                }
-                graph.setEdge(id, otherId, d + otherDoc.score);
-            }
-
-            // try to find dups based on the contact field
-            root = new BooleanQuery();
-            String contacts[] = doc.getValues("key_contact");
-            for (String contact: contacts) {
-                if (contact.length() == 0) continue;
-                Query q = null;
-                if (contact.length() <= 3) {
-                    q = new TermQuery(new Term("key_contact", contact));
-                } else if (contact.length() <= 6) {
-                    q = new FuzzyQuery(new Term("key_contact", contact), 1, 2);
-                } else {
-                    q = new FuzzyQuery(new Term("key_contact", contact), 2, 2);
-                }
-                q.setBoost((contact.length() - 1f) / contact.length());
-                root.add(new BooleanClause(q, Occur.SHOULD));
-            }
-            root.setMinimumNumberShouldMatch(1);
-            root.setBoost(root.clauses().size());
-            if (root.getClauses().length > 0) {
+                root.setMinimumNumberShouldMatch(Math.min(
+                        words.size(),
+                        1 + words.size() * 2 / 3
+                ));
+                float boost = (float) (
+                        0.1 + 0.9 * (words.size() - 1) / words.size()
+                );
+                root.setBoost(boost);
+                NumericUtils.longToPrefixCoded(id, 0, bytes);
                 root.add(new BooleanClause(new TermQuery(
                         new Term("id", bytes)),
-                        Occur.MUST_NOT));
-                docs = search.search(root, 10);
+                        Occur.MUST_NOT
+                ));
+
+                TopDocs docs = search.search(root, 20);
                 if (docs.scoreDocs.length > 0) {
-                    Log.d(LOGTAG, "Reference [contact methods] " + Arrays.toString(contacts));
+                    Log.d(LOGTAG, "Reference " + Arrays.toString(doc.getValues("display_name")));
                 }
-                for (ScoreDoc otherDoc: docs.scoreDocs) {
+                for (ScoreDoc otherDoc : docs.scoreDocs) {
                     Document other = reader.document(otherDoc.doc);
                     long otherId = Long.parseLong(other.getValues("id")[0]);
                     String log =
-                        "Hit: doc " + otherDoc.doc + " / contact " +
-                         otherId + " / score "+ otherDoc.score +
-                        " " + Arrays.toString(other.getValues("display_name"));
+                            "Hit: doc " + otherDoc.doc + " / contact " +
+                                    otherId + " / score " + otherDoc.score +
+                                    " " + Arrays.toString(other.getValues("display_name"));
                     Log.d(LOGTAG, log);
                     Double d = graph.getEdge(id, otherId);
                     if (d == null) {
@@ -335,6 +297,55 @@ public class AnalyzerThread extends Thread {
                     }
                     graph.setEdge(id, otherId, d + otherDoc.score);
                 }
+            } catch (BooleanQuery.TooManyClauses e) {
+                e.printStackTrace();
+            }
+
+            try {
+                // try to find dups based on the contact field
+                BooleanQuery root = new BooleanQuery();
+                String contacts[] = doc.getValues("key_contact");
+                for (String contact : contacts) {
+                    if (contact.length() == 0) continue;
+                    Query q = null;
+                    if (contact.length() <= 3) {
+                        q = new TermQuery(new Term("key_contact", contact));
+                    } else if (contact.length() <= 6) {
+                        q = new FuzzyQuery(new Term("key_contact", contact), 1, 2);
+                    } else {
+                        q = new FuzzyQuery(new Term("key_contact", contact), 2, 2);
+                    }
+                    q.setBoost((contact.length() - 1f) / contact.length());
+                    root.add(new BooleanClause(q, Occur.SHOULD));
+                }
+                root.setMinimumNumberShouldMatch(1);
+                root.setBoost(root.clauses().size());
+                if (root.getClauses().length > 0) {
+                    root.add(new BooleanClause(new TermQuery(
+                            new Term("id", bytes)),
+                            Occur.MUST_NOT
+                    ));
+                    TopDocs docs = search.search(root, 10);
+                    if (docs.scoreDocs.length > 0) {
+                        Log.d(LOGTAG, "Reference [contact methods] " + Arrays.toString(contacts));
+                    }
+                    for (ScoreDoc otherDoc : docs.scoreDocs) {
+                        Document other = reader.document(otherDoc.doc);
+                        long otherId = Long.parseLong(other.getValues("id")[0]);
+                        String log =
+                                "Hit: doc " + otherDoc.doc + " / contact " +
+                                        otherId + " / score " + otherDoc.score +
+                                        " " + Arrays.toString(other.getValues("display_name"));
+                        Log.d(LOGTAG, log);
+                        Double d = graph.getEdge(id, otherId);
+                        if (d == null) {
+                            d = 0d;
+                        }
+                        graph.setEdge(id, otherId, d + otherDoc.score);
+                    }
+                }
+            } catch (BooleanQuery.TooManyClauses e) {
+                e.printStackTrace();
             }
 
             done++;
