@@ -15,10 +15,13 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.BatteryManager;
 import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.Preference;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -40,6 +43,8 @@ public class AnalyzerService extends Service {
     private static final String TAG = "ContactMerger/AnalyzerService";
 
     protected static AnalyzerThread analyzer;
+
+    protected SharedPreferences scanPreferences;
 
     protected ArrayList<ProgressListener> listeners = new ArrayList<ProgressListener>(3);
     protected LocalBroadcastManager broadcastManager;
@@ -63,6 +68,8 @@ public class AnalyzerService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
+        scanPreferences = getSharedPreferences("scan_preferences", 0);
+
         final NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -84,6 +91,7 @@ public class AnalyzerService extends Service {
                         } catch (Exception e) {
                         }
                     }
+                    stopForeground(true);
                     notificationManager.cancel(1);
                 }
             }.start();
@@ -155,10 +163,10 @@ public class AnalyzerService extends Service {
                         (UndirectedGraph) GraphIO.load(graphFile),
                         getBaseContext().getContentResolver().acquireContentProviderClient(ContactsContract.AUTHORITY_URI));
                 ModelIO.store(model, modelFile);
+                return; // only return if the conversion succeeded
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return;
         }
 
         if (level <= 0.25) {
@@ -170,9 +178,14 @@ public class AnalyzerService extends Service {
             f += rnd.nextDouble();
         }
 
+        long lastScan = graphFile.lastModified();
+        if (scanPreferences != null) {
+            lastScan = Math.max(lastScan, scanPreferences.getLong("start_scan", lastScan));
+        }
+
         // 2. Plugged in, battery good -> go (bit not more often than once per 24 hours)
         if (!onBattery && level > 0.95) {
-            if (graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+            if (lastScan + 7 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to good battery and old data");
                 startThread();
                 return;
@@ -180,7 +193,7 @@ public class AnalyzerService extends Service {
         }
 
         if (!onBattery && level > 0.75) {
-            if (graphFile.lastModified() + 30 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+            if (lastScan + 30 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to ok battery and old data");
                 startThread();
                 return;
@@ -188,14 +201,14 @@ public class AnalyzerService extends Service {
         }
 
         // 3. Really old data + plugged in?
-        if (!onBattery && graphFile.lastModified() + 60 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+        if (!onBattery && lastScan + 60 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to old data (on battery)");
             startThread();
             return;
         }
 
         // 4. we should only run on battery if everything else fails
-        if (graphFile.lastModified() + 90 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
+        if (lastScan + 90 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to very old data");
             startThread();
             return;
@@ -209,6 +222,13 @@ public class AnalyzerService extends Service {
         Intent intent = new Intent("de.measite.contactmerger.ANALYSE");
         intent.putExtra("event", "start");
         broadcastManager.sendBroadcast(intent);
+        if (scanPreferences != null) {
+            try {
+                scanPreferences.edit().putLong("scan_start", System.currentTimeMillis()).commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         analyzer.start();
     }
 
