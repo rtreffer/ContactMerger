@@ -39,6 +39,9 @@ public class MergeActivity extends Activity implements View.OnClickListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             String event = intent.getStringExtra("event");
+            if (event == null) {
+                return;
+            }
             if ("start".equals(event)) {
                 progressBar.setProgress(0);
                 progressBar.setMax(1000);
@@ -61,6 +64,13 @@ public class MergeActivity extends Activity implements View.OnClickListener {
                 progressBar.setMax(1000);
                 progressContainer.setVisibility(View.GONE);
                 updateList();
+                return;
+            }
+            if ("abort".equals(event)) {
+                progressBar.setProgress(0);
+                progressBar.setMax(1);
+                progressContainer.setVisibility(View.GONE);
+                startScan.setVisibility(View.VISIBLE);
                 return;
             }
         }

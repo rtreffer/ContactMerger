@@ -4,4 +4,6 @@ public interface ProgressListener {
 
     void update(float done);
 
+    void abort();
+
 }

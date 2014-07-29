@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Random;
 
 import android.app.Notification;
 import android.app.Notification.Builder;
@@ -42,6 +43,8 @@ public class AnalyzerService extends Service {
 
     protected ArrayList<ProgressListener> listeners = new ArrayList<ProgressListener>(3);
     protected LocalBroadcastManager broadcastManager;
+
+    protected Random rnd = new Random();
 
     @Override
     public void onCreate() {
@@ -162,9 +165,14 @@ public class AnalyzerService extends Service {
             return;
         }
 
+        double f = 1d;
+        synchronized (rnd) {
+            f += rnd.nextDouble();
+        }
+
         // 2. Plugged in, battery good -> go (bit not more often than once per 24 hours)
         if (!onBattery && level > 0.95) {
-            if (graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+            if (graphFile.lastModified() + 7 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to good battery and old data");
                 startThread();
                 return;
@@ -172,7 +180,7 @@ public class AnalyzerService extends Service {
         }
 
         if (!onBattery && level > 0.75) {
-            if (graphFile.lastModified() + 30 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+            if (graphFile.lastModified() + 30 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
                 Log.d(TAG, "Starting thread due to ok battery and old data");
                 startThread();
                 return;
@@ -180,14 +188,14 @@ public class AnalyzerService extends Service {
         }
 
         // 3. Really old data + plugged in?
-        if (!onBattery && graphFile.lastModified() + 60 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+        if (!onBattery && graphFile.lastModified() + 60 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to old data (on battery)");
             startThread();
             return;
         }
 
         // 4. we should only run on battery if everything else fails
-        if (graphFile.lastModified() + 90 * 24 * 60 * 60 * 1000 < System.currentTimeMillis()) {
+        if (graphFile.lastModified() + 90 * 24 * 60 * 60 * 1000 * f < System.currentTimeMillis()) {
             Log.d(TAG, "Starting thread due to very old data");
             startThread();
             return;
@@ -230,6 +238,14 @@ public class AnalyzerService extends Service {
 
         analyzer.addListener(new ProgressListener() {
             long last = System.currentTimeMillis();
+            @Override
+            public void abort() {
+                stopForeground(true);
+                notificationManager.cancel(1);
+                Intent intent = new Intent("de.measite.contactmerger.ANALYSE");
+                intent.putExtra("event", "abort");
+                broadcastManager.sendBroadcast(intent);
+            }
             @Override
             public void update(float done) {
                 builder.setProgress(1000, (int)(1000 * done), false);

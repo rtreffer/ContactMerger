@@ -577,5 +577,11 @@ public class AnalyzerThread extends Thread {
                 e.printStackTrace();
             }
         }
+        synchronized (listeners) {
+            for (ProgressListener listener : listeners) {
+                listener.update(0f);
+                listener.abort();
+            }
+        }
     }
 }
