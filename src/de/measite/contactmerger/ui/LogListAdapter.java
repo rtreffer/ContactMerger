@@ -101,30 +101,32 @@ public class LogListAdapter extends CursorAdapter implements View.OnClickListene
                 if (bitmapData.containsKey(contactId)) continue;
                 Contact contact = mapper.getContactById(contactId, true, true);
                 boolean found = false;
-                if (contact.getPhotoThumbnailUri() != null &&
-                        contact.getPhotoThumbnailUri().length() > 0) {
-                    try {
-                        Uri.parse(contact.getPhotoThumbnailUri());
-                        bitmapData.put(contactId, contact.getPhotoThumbnailUri());
-                        found = true;
-                    } catch (Exception e) {
+                if (contact != null) {
+                    if (contact.getPhotoThumbnailUri() != null &&
+                            contact.getPhotoThumbnailUri().length() > 0) {
+                        try {
+                            Uri.parse(contact.getPhotoThumbnailUri());
+                            bitmapData.put(contactId, contact.getPhotoThumbnailUri());
+                            found = true;
+                        } catch (Exception e) {
                     /* invalid uri, should never(!) happen */
-                        e.printStackTrace();
-                    }
-                } else {
-                    for (RawContact raw : contact.getRawContacts()) {
-                        if (found) break;
-                        for (Metadata m : raw.getMetadata().values()) {
-                            if (!(m instanceof PhotoMetadata)) continue;
-                            PhotoMetadata p = (PhotoMetadata) m;
-                            byte data[] = p.getBlob();
-                            if (data == null || data.length == 0) continue;
-                            try {
-                                Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-                                bitmapData.put(contactId, bitmap);
-                                found = true;
-                                break;
-                            } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        for (RawContact raw : contact.getRawContacts()) {
+                            if (found) break;
+                            for (Metadata m : raw.getMetadata().values()) {
+                                if (!(m instanceof PhotoMetadata)) continue;
+                                PhotoMetadata p = (PhotoMetadata) m;
+                                byte data[] = p.getBlob();
+                                if (data == null || data.length == 0) continue;
+                                try {
+                                    Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+                                    bitmapData.put(contactId, bitmap);
+                                    found = true;
+                                    break;
+                                } catch (Exception e) {
+                                }
                             }
                         }
                     }
