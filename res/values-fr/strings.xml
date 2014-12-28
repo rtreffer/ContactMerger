@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Fusionner les contacts</string>
+    <string name="title_activity_merge">Fusionner les contacts</string>
+    <string name="analyze_now">Analyser</string>
+    <string name="about">À propos</string>
+    <string name="action_log">Journal des actions</string>
+    <string name="title_activity_log">Journal des actions</string>
+    <string name="hello_world">Salut, mondeu00A0!</string>
+    <string name="action_settings">Paramètres</string>
+
+</resources>

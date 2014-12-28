@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="aboutLibraries_description_text">ContactMerger a été développé par\nRené Treffer\nFranziska-Bilek-Weg 7\nD-80339 München\nAllemagne\n\nMais cela n'aurait pas été possible sans ces fabuleuses bibliothèquesu00A0:</string>
+
+    <!-- lucene licence -->
+    <string name="library_Lucene_author">Apache Lucene</string>
+    <string name="library_Lucene_libraryName">Apache Lucene</string>
+    <string name="library_Lucene_libraryDescription">Technologie Java d'indexation et de recherche, autant que de correcteur orthographique, avec des capacités notables d'analyse et de tokenisation.</string>
+
+    <!-- kryo licence -->
+    <string name="library_Kryo_author">EsothericSoftware</string>
+    <string name="library_Kryo_libraryName">Kryo</string>
+    <string name="library_Kryo_libraryDescription">Kryo est un cadriciel rapide et efficace pour la sérialisation de graphe objet en Java. Les objectifs du projet sont la vitesse, l'efficacité et la facilité d'utilisation de l'API. Le projet est utile dès que des objets doivent être sérialisés, que ce soit dans un fichier, une base de données ou à travers un réseau.</string>
+
+    <!-- asm licence -->
+    <string name="library_asm_author">ObjectWeb</string>
+    <string name="library_asm_libraryName">ObjectWeb ASM</string>
+    <!-- translation from https://fr.wikipedia.org/wiki/ASM_%28logiciel%29 -->
+    <string name="library_asm_libraryDescription">ASM est une bibliothèque Java de manipulation et d'analyse du bytecode Java. ASM peut être utilisée pour modifier des classes existantes ou créer dynamiquement des classes, directement sous forme binaire. Les algorithmes de transformations et d'analyses fournis permettent d'assembler facilement des transformations complexes et des outils d'analyse statique.\n\nASM fournit des fonctionnalités similaires aux autres frameworks de manipulation du bytecode, mais porte une attention particulière sur la simplicité d'usage et la performance. Il a été conçu pour être aussi petit et rapide que possible, ce qui le rend intéressant pour être utilisé dans des systèmes dynamiques, mais il peut aussi être utilisé de manière statique.</string>
+
+    <!-- objenesis licence -->
+    <string name="library_objenesis_author">Objenesis</string>
+    <string name="library_objenesis_libraryName">Objenesis</string>
+    <string name="library_objenesis_libraryDescription">Objenesis est une petite bibliothèque Java qui n'a qu'un objetu00A0: instancier un nouvel objet d'une classe particulière</string>
+
+    <!-- aosp licence -->
+    <string name="library_aosp_author">Android Open Source Project</string>
+    <string name="library_aosp_libraryName">Android Open Source Project</string>
+    <string name="library_aosp_libraryDescription">Bienvenue sur le projet Open Source Androidu00A0!\n\nAndroid est une pile logicielle open-source pour une large gamme d'appareils mobiles et un projet open-source correspondant dirigé par Google. Ici vous pouvez trouver les informations et le code source dont vous aurez besoin pour en savoir plus sur la plate-forme Android. De là, vous pouvez créer des variantes personnalisées de la pile logicielle Android, porter les appareils et accessoires sur la plateforme Android, et vous assurer que vos appareils sont compatibles avec les spécifications de compatibilité Android.</string>
+
+</resources>
