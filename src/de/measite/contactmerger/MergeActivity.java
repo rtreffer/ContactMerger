@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import com.tundem.aboutlibraries.Libs;
 import com.tundem.aboutlibraries.ui.LibsActivity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,6 +15,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
@@ -80,6 +82,7 @@ public class MergeActivity extends Activity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS, Manifest.permission.RECEIVE_BOOT_COMPLETED},1);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.merge);
 

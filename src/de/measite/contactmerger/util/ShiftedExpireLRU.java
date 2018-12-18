@@ -1,11 +1,7 @@
 package de.measite.contactmerger.util;
 
-import android.net.http.AndroidHttpClient;
-
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.Map;
 
 import de.measite.contactmerger.contacts.ContactDataMapper;
 
